@@ -12,6 +12,22 @@ export function GetLibraryState() {
   return app().GetLibraryState();
 }
 
+export function GetFavorites() {
+  return app().GetFavorites();
+}
+
+export function ImportFavorites(trackIds) {
+  return app().ImportFavorites(trackIds);
+}
+
+export function SetFavorite(trackId, active) {
+  return app().SetFavorite(trackId, active);
+}
+
+export function SetFavorites(trackIds) {
+  return app().SetFavorites(trackIds);
+}
+
 export function GetPlaybackState() {
   return app().GetPlaybackState();
 }

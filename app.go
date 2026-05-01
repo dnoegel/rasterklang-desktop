@@ -24,10 +24,15 @@ type App struct {
 
 	configPath string
 	engine     *AudioEngine
+	favorites  *Favorites
 }
 
 type appConfig struct {
 	HVSCRoot string `json:"hvscRoot"`
+}
+
+type FavoritesState struct {
+	IDs []string `json:"ids"`
 }
 
 type LibraryState struct {
@@ -112,6 +117,7 @@ func NewApp(manifest []byte) (*App, error) {
 		config:     config,
 		configPath: configPath,
 		engine:     NewAudioEngine(),
+		favorites:  LoadFavorites(),
 	}, nil
 }
 
@@ -128,6 +134,29 @@ func (a *App) GetLibraryState() (*LibraryState, error) {
 	root := a.catalog.HVSCRoot
 	a.mu.RUnlock()
 	return libraryState(root), nil
+}
+
+func (a *App) GetFavorites() (*FavoritesState, error) {
+	return &FavoritesState{IDs: a.validFavoriteIDs(a.favorites.IDs())}, nil
+}
+
+func (a *App) SetFavorite(trackID string, active bool) (*FavoritesState, error) {
+	ids := a.validFavoriteIDs([]string{trackID})
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("track %q nicht gefunden", trackID)
+	}
+	a.favorites.Set(ids[0], active)
+	return a.GetFavorites()
+}
+
+func (a *App) SetFavorites(trackIDs []string) (*FavoritesState, error) {
+	ids := a.validFavoriteIDs(trackIDs)
+	return &FavoritesState{IDs: a.favorites.Replace(ids)}, nil
+}
+
+func (a *App) ImportFavorites(trackIDs []string) (*FavoritesState, error) {
+	ids := a.validFavoriteIDs(trackIDs)
+	return &FavoritesState{IDs: a.favorites.AddMany(ids)}, nil
 }
 
 func (a *App) ChooseHVSCRoot() (*LibraryState, error) {
@@ -361,6 +390,25 @@ func (a *App) trackPath(track *Track) (string, error) {
 		return "", fmt.Errorf("SID-Datei nicht gefunden: %s", path)
 	}
 	return path, nil
+}
+
+func (a *App) validFavoriteIDs(trackIDs []string) []string {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	if a.catalog == nil {
+		return nil
+	}
+	seen := map[string]bool{}
+	ids := make([]string, 0, len(trackIDs))
+	for _, id := range trackIDs {
+		id = strings.TrimSpace(id)
+		if id == "" || seen[id] || a.catalog.TrackByID[id] == nil {
+			continue
+		}
+		seen[id] = true
+		ids = append(ids, id)
+	}
+	return ids
 }
 
 func (a *App) saveConfig() {

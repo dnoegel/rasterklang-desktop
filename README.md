@@ -26,6 +26,12 @@ On first launch, use the `HVSC Collection` button in the sidebar and select
 your local `C64Music` folder, or a parent folder that contains `C64Music`. The
 selection is stored in the platform user config directory.
 
+Favorites are stored as track IDs in `favorites.json` next to `config.json` in
+the platform user config directory. On macOS this is usually
+`~/Library/Application Support/zmk-nativeplayer`; on Linux it is usually
+`$XDG_CONFIG_HOME/zmk-nativeplayer` or `~/.config/zmk-nativeplayer`. Existing
+favorites from the older WebView `localStorage` key are imported on startup.
+
 ## Build
 
 ```sh

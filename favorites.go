@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 )
 
@@ -47,6 +48,43 @@ func (f *Favorites) Toggle(id string) bool {
 	return true
 }
 
+func (f *Favorites) Set(id string, active bool) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if active {
+		f.set[id] = true
+	} else {
+		delete(f.set, id)
+	}
+	f.saveLocked()
+	return f.set[id]
+}
+
+func (f *Favorites) Replace(ids []string) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.set = map[string]bool{}
+	for _, id := range ids {
+		if id != "" {
+			f.set[id] = true
+		}
+	}
+	f.saveLocked()
+	return f.idsLocked()
+}
+
+func (f *Favorites) AddMany(ids []string) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, id := range ids {
+		if id != "" {
+			f.set[id] = true
+		}
+	}
+	f.saveLocked()
+	return f.idsLocked()
+}
+
 func (f *Favorites) Has(id string) bool {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
@@ -71,14 +109,26 @@ func (f *Favorites) Tracks(catalog *Catalog) []*Track {
 	return out
 }
 
-func (f *Favorites) saveLocked() {
-	if f.path == "" {
-		return
-	}
+func (f *Favorites) IDs() []string {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+	return f.idsLocked()
+}
+
+func (f *Favorites) idsLocked() []string {
 	ids := make([]string, 0, len(f.set))
 	for id := range f.set {
 		ids = append(ids, id)
 	}
+	sort.Strings(ids)
+	return ids
+}
+
+func (f *Favorites) saveLocked() {
+	if f.path == "" {
+		return
+	}
+	ids := f.idsLocked()
 	data, err := json.MarshalIndent(ids, "", "  ")
 	if err != nil {
 		return

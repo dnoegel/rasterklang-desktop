@@ -3,7 +3,7 @@ import { createNativeEngineController } from "./src/lib/native-engine.js";
 import { createEventBus } from "./src/lib/events.js";
 import { createToast } from "./src/lib/ui.js";
 import { createCatalog } from "./src/lib/catalog.js?v=2026-04-27-21";
-import { createFavorites } from "./src/lib/favorites.js?v=2026-04-27-21";
+import { createNativeFavorites } from "./src/lib/native-favorites.js";
 import { ChooseHVSCRoot, GetLibraryState } from "./wailsjs/go/main/App.js";
 
 const APP_VERSION = "2026-04-28-19";
@@ -44,7 +44,7 @@ async function boot() {
     },
     version: APP_VERSION,
   };
-  ctx.favorites = createFavorites(ctx);
+  ctx.favorites = await createNativeFavorites(ctx);
   window.zmkWebplayer = ctx;
 
   await engine.loadSDK();
