@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect x="66" y="60" width="892" height="900" rx="150" fill="#b8b39b"/>
+  <rect x="92" y="86" width="840" height="850" rx="118" fill="#beb9a3"/>
+  <rect x="112" y="112" width="800" height="650" rx="44" fill="#101112"/>
+  <text x="245" y="568" font-family="monospace" font-size="420" font-weight="900" fill="#7e8fff">R</text>
+  <text x="525" y="568" font-family="monospace" font-size="420" font-weight="900" fill="#eeeeea">K</text>
+  <path d="M164 704h24v-54h-24zm72 0h24V508h-24zm108 0h24V466h-24zm108 0h24V518h-24zm108 0h24V498h-24zm108 0h24V600h-24zm108 0h24V612h-24zm108 0h24V652h-24z" fill="#8fd4e7"/>
+  <rect x="96" y="760" width="832" height="160" fill="#b6b097"/>
+  <circle cx="156" cy="826" r="48" fill="#222"/>
+  <rect x="274" y="793" width="430" height="7" fill="#c44438"/>
+  <rect x="274" y="810" width="430" height="7" fill="#d67e32"/>
+  <rect x="274" y="827" width="430" height="7" fill="#d8ba3f"/>
+  <rect x="274" y="844" width="430" height="7" fill="#74aa4b"/>
+  <rect x="274" y="861" width="430" height="7" fill="#3a60a5"/>
+  <rect x="722" y="784" width="148" height="76" rx="30" fill="#262726"/>
+  <text x="748" y="844" font-family="monospace" font-size="62" font-weight="900" fill="#ebebe2">64</text>
+</svg>

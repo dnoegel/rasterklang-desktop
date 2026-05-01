@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Rasterklang
+Comment=Local HVSC SID player
+Exec=rasterklang
+Icon=rasterklang
+Terminal=false
+Categories=Audio;AudioVideo;Player;

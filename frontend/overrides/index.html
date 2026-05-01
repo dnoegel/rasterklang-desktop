@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rasterklang</title>
+    <meta name="description" content="Rasterklang ist ein lokaler HVSC SID Player mit nativer Go-Audioengine.">
+    <meta http-equiv="Cache-Control" content="no-store">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta name="theme-color" content="#0b0c10">
+    <link rel="stylesheet" href="./styles.css?v=2026-04-28-19">
+    <link rel="preload" href="./assets/hvsc-library.json?v=2026-04-28-19" as="fetch" crossorigin="anonymous">
+  </head>
+  <body>
+    <div id="app" data-loading="true">
+      <div class="boot-splash" role="status">
+        <div class="boot-splash__logo">
+          <span>SID</span>
+        </div>
+        <p>HVSC wird geladen...</p>
+      </div>
+    </div>
+    <div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+    <script type="module" src="./app.js?v=2026-04-28-19"></script>
+  </body>
+</html>

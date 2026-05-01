@@ -1,0 +1,5 @@
+/bin/
+/zmk-nativeplayer
+/build/*.app/
+/build/*.icns
+/build/*.iconset/
