@@ -1,5 +1,9 @@
 # Rasterklang Desktop
 
+| Search | Insight |
+| --- | --- |
+| ![Rasterklang Desktop search view](docs/assets/Search.png) | ![Rasterklang Desktop audio insight view](docs/assets/Insight.png) |
+
 `rk-desktop` is the native desktop player for Rasterklang. It packages the
 shared web player interface with a local Go/Wails shell and plays HVSC SID files
 through the native `github.com/dnoegel/zmk-sid` audio engine.
