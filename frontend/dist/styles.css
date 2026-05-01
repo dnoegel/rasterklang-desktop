@@ -887,12 +887,46 @@ button.track-row:hover {
 }
 
 .player-subtune {
-  width: 82px;
-  min-height: 30px;
+  width: 64px;
+  height: 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--bg-2);
   color: var(--fg-1);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 20px 0 9px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.player-subtune-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-grid;
+}
+
+.player-subtune-wrap[hidden] {
+  display: none;
+}
+
+.player-subtune-wrap::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--fg-3);
+  border-bottom: 1.5px solid var(--fg-3);
+  pointer-events: none;
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.player-subtune:disabled {
+  color: var(--fg-3);
+  cursor: progress;
 }
 
 .player-controls {

@@ -4,6 +4,7 @@ import { currentTrack, formatDuration, playNextTrack, playPrevTrack } from "../l
 export function mountPlayer(host, ctx) {
   let autoAdvanceKey = "";
   let transportBusy = false;
+  let pendingSubtune = 0;
 
   const wrap = el("section", { class: "shell-player", "aria-label": "SID Player" });
   const artCanvas = el("canvas", { width: 120, height: 120 });
@@ -17,15 +18,38 @@ export function mountPlayer(host, ctx) {
   const favBtn = button("heart", "Favorisieren", () => toggleFavorite(), "player-btn--soft");
   const subSelect = el("select", {
     class: "field player-subtune",
-    style: { display: "none" },
-    onchange: (event) => {
-      ctx.engine.setSubtune(Number(event.target.value));
-      if (ctx.engine.isPlaying() || ctx.engine.isPaused()) {
-        ctx.engine.stop().then(() => ctx.engine.play({ subtune: Number(event.target.value) }));
+    "aria-label": "Subtune",
+    onchange: async (event) => {
+      const selected = normalizeSelectedSubtune(event.currentTarget.value);
+      if (!selected) return;
+      pendingSubtune = selected;
+      subSelect.disabled = true;
+      subSelect.dataset.busy = "true";
+      ctx.engine.setSubtune(selected);
+      try {
+        if (ctx.engine.isPlaying() || ctx.engine.isPaused()) {
+          await ctx.engine.stop();
+          ctx.engine.setSubtune(selected);
+          await ctx.engine.play({ subtune: selected });
+        } else {
+          refresh();
+        }
+      } catch (error) {
+        ctx.toast.error(`Subtune konnte nicht gestartet werden: ${error.message || error}`);
+      } finally {
+        pendingSubtune = 0;
+        subSelect.disabled = false;
+        delete subSelect.dataset.busy;
+        refresh();
       }
     },
   });
-  const left = el("div", { class: "player-info" }, [art, el("div", { class: "player-meta" }, [titleEl, subEl]), favBtn, subSelect]);
+  const subSelectWrap = el("span", {
+    class: "player-subtune-wrap",
+    hidden: true,
+    title: "Subtune",
+  }, [subSelect]);
+  const left = el("div", { class: "player-info" }, [art, el("div", { class: "player-meta" }, [titleEl, subEl]), favBtn, subSelectWrap]);
 
   const prevBtn = button("prev", "Vorheriger Track", () => safePrev());
   const playBtn = button("play", "Wiedergabe / Pause", () => togglePlay(), "player-btn--primary");
@@ -252,6 +276,11 @@ export function mountPlayer(host, ctx) {
     return track.durations?.[subtune] || track.duration || 0;
   }
 
+  function normalizeSelectedSubtune(value) {
+    const n = Math.trunc(Number(value));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
   function refresh() {
     const snap = ctx.engine.snapshot();
     const tune = snap.tune;
@@ -276,14 +305,15 @@ export function mountPlayer(host, ctx) {
 
     const total = tune?.metadata?.subtuneCount || track?.subtunes || 1;
     if (total > 1) {
-      subSelect.style.display = "block";
+      subSelectWrap.hidden = false;
       if (subSelect.options.length !== total) {
         subSelect.innerHTML = "";
-        for (let i = 1; i <= total; i += 1) subSelect.append(new Option(`Sub ${i}/${total}`, String(i)));
+        for (let i = 1; i <= total; i += 1) subSelect.append(new Option(`${i}/${total}`, String(i)));
       }
-      subSelect.value = String(snap.currentSubtune || track?.defaultSubtune || 1);
+      subSelect.value = String(pendingSubtune || snap.currentSubtune || track?.defaultSubtune || 1);
     } else {
-      subSelect.style.display = "none";
+      subSelectWrap.hidden = true;
+      pendingSubtune = 0;
     }
 
     setIcon(playBtn, snap.playing && !snap.paused ? "pause" : "play");
