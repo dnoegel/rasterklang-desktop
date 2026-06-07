@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	sid "github.com/dnoegel/zmk-sid"
+	sid "github.com/dnoegel/rasterklang"
 	"github.com/ebitengine/oto/v3"
 )
 

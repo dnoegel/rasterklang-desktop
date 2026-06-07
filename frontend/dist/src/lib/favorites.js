@@ -1,4 +1,4 @@
-const STORAGE_KEY = "zmk-webplayer:favorites:v1";
+const STORAGE_KEY = "rasterklang-webplayer:favorites:v1";
 
 export function createFavorites(ctx) {
   let ids = load();

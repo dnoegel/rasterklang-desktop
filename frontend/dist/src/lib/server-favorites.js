@@ -1,13 +1,7 @@
-import {
-  GetFavorites,
-  ImportFavorites,
-  SetFavorites,
-} from "../../wailsjs/go/main/App.js";
-
 const LEGACY_STORAGE_KEY = "rasterklang-webplayer:favorites:v1";
 
-export async function createNativeFavorites(ctx) {
-  let ids = new Set(normalizeState(await GetFavorites()));
+export async function createServerFavorites(ctx) {
+  let ids = new Set(normalizeState(await request("/api/favorites")));
   let saveQueue = Promise.resolve();
   let saveVersion = 0;
 
@@ -23,20 +17,22 @@ export async function createNativeFavorites(ctx) {
 
   async function migrateLegacyFavorites() {
     const legacyIds = readLegacyIds();
-    if (legacyIds.length === 0) return;
-
+    if (!legacyIds.length) return;
     try {
-      ids = new Set(normalizeState(await ImportFavorites(legacyIds)));
-      globalThis.localStorage?.removeItem(LEGACY_STORAGE_KEY);
+      ids = new Set(normalizeState(await request("/api/favorites/import", {
+        method: "POST",
+        body: JSON.stringify({ ids: legacyIds }),
+      })));
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch (error) {
       console.warn("[favorites] legacy migration failed:", error);
-      ctx.toast?.warn?.("Favoriten konnten nicht migriert werden.", 4200);
+      ctx.toast?.warn?.("Favorites could not be migrated.", 4200);
     }
   }
 
   function readLegacyIds() {
     try {
-      const raw = globalThis.localStorage?.getItem(LEGACY_STORAGE_KEY);
+      const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
     } catch {
@@ -48,10 +44,12 @@ export async function createNativeFavorites(ctx) {
     const version = ++saveVersion;
     const snapshot = Array.from(ids);
     emit();
-
     saveQueue = saveQueue
       .catch(() => {})
-      .then(() => SetFavorites(snapshot))
+      .then(() => request("/api/favorites", {
+        method: "PUT",
+        body: JSON.stringify({ ids: snapshot }),
+      }))
       .then((state) => {
         if (version !== saveVersion) return;
         ids = new Set(normalizeState(state));
@@ -59,7 +57,7 @@ export async function createNativeFavorites(ctx) {
       })
       .catch((error) => {
         console.error("[favorites] save failed:", error);
-        ctx.toast?.warn?.("Favoriten konnten nicht gespeichert werden.", 4200);
+        ctx.toast?.warn?.("Favorites could not be saved.", 4200);
       });
   }
 
@@ -94,4 +92,14 @@ export async function createNativeFavorites(ctx) {
       return Array.from(ids);
     },
   };
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(path, {
+    cache: "no-store",
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+  if (!response.ok) throw new Error(`API ${path} failed (${response.status})`);
+  return response.json();
 }

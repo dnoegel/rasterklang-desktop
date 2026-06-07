@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	sid "github.com/dnoegel/zmk-sid"
+	sid "github.com/dnoegel/rasterklang"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -211,7 +211,7 @@ func (a *App) PlayTrack(trackID string, subtune int, startAt float64) (*Playback
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("zmk-nativeplayer: play track id=%s title=%q file=%s", track.ID, track.Title, track.File)
+	log.Printf("rasterklang-desktop: play track id=%s title=%q file=%s", track.ID, track.Title, track.File)
 	if err := a.engine.PlayTrack(track, path, subtune, startAt); err != nil {
 		return a.playbackState(false), err
 	}
@@ -433,7 +433,7 @@ func defaultConfigPath() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(dir, "zmk-nativeplayer", "config.json")
+	return filepath.Join(dir, "rasterklang", "config.json")
 }
 
 func loadConfig(path string) appConfig {

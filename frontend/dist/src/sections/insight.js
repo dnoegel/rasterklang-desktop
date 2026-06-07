@@ -1,6 +1,6 @@
 import { el, clear, fmtHex } from "../lib/ui.js";
-import { currentTrack } from "../lib/catalog.js?v=2026-05-01-084125";
-import { pill, sectionHead } from "../lib/view-components.js?v=2026-05-01-084125";
+import { currentTrack } from "../lib/catalog.js?v=2026-06-06-180836";
+import { pill, sectionHead } from "../lib/view-components.js?v=2026-06-06-180836";
 import { drawFilterResponse, drawOscilloscope, drawSpectrum, drawVoiceShape, fitCanvas } from "../lib/scope.js";
 import {
   REGISTER_MAP,
@@ -22,7 +22,7 @@ export function mount(host, ctx) {
   let raf = 0;
 
   const title = el("h1", {}, "Insight");
-  const subtitle = el("p", {}, "Live-Analyse des aktuellen SID-Tracks.");
+  const subtitle = el("p", {}, "Live analysis of the current SID track.");
   const pills = el("div", { class: "pill-row" });
   const hero = el("section", { class: "insight-hero" }, [
     el("div", {}, [el("p", { class: "kicker" }, "Live"), title, subtitle, pills]),
@@ -34,11 +34,11 @@ export function mount(host, ctx) {
   const spectrumCanvas = el("canvas");
   host.append(sectionHead("Audio"));
   host.append(el("div", { class: "insight-audio-grid" }, [
-    scopeCard("Oszilloskop", timeCanvas),
-    scopeCard("Frequenzspektrum", spectrumCanvas),
+    scopeCard("Oscilloscope", timeCanvas),
+    scopeCard("Frequency spectrum", spectrumCanvas),
   ]));
 
-  host.append(sectionHead("Stimmen"));
+  host.append(sectionHead("Voices"));
   const voiceCards = [0, 1, 2].map((index) => voiceCard(index));
   host.append(el("div", { class: "voice-grid" }, voiceCards.map((card) => card.node)));
 
@@ -94,10 +94,10 @@ export function mount(host, ctx) {
     title.textContent = track?.title || state.tune?.metadata?.title || "Insight";
     subtitle.textContent = track
       ? `${track.artist} - ${track.author || track.hvscPath}`
-      : "Starte einen SID-Track, um Live-Daten zu sehen.";
+      : "Start a SID track to see live data.";
     clear(pills);
     pills.append(
-      pill("Status", state.playing ? (state.paused ? "Pause" : "Live") : "Bereit"),
+      pill("Status", state.playing ? (state.paused ? "Paused" : "Live") : "Ready"),
       pill("Subtune", String(state.currentSubtune || track?.defaultSubtune || 1)),
       pill("Clock", track?.clock || state.tune?.metadata?.clock || "--"),
       pill("SID", track?.model || state.tune?.metadata?.sidModel || "--"),
@@ -141,11 +141,11 @@ export function mount(host, ctx) {
       card.note.textContent = hz > 8 ? noteFromHz(hz) : "--";
       card.freq.textContent = `${hz.toFixed(1)} Hz`;
       card.wave.textContent = wfs;
-      card.gate.textContent = ctrl.gate ? "Gate an" : "Gate aus";
+      card.gate.textContent = ctrl.gate ? "Gate on" : "Gate off";
       card.adsr.textContent = `A${adsr.attack} D${adsr.decay} S${adsr.sustain} R${adsr.release}`;
       card.pulse.textContent = `${Math.round(pwToDuty(pulseWidth) * 100)}% PW`;
       card.activity.dataset.active = active ? "true" : "false";
-      card.activity.title = active ? "Voice aktiv" : "Voice inaktiv";
+      card.activity.title = active ? "Voice active" : "Voice inactive";
       fitCanvas(card.oscCanvas);
       drawVoiceShape(card.oscCanvas.getContext("2d"), {
         control,
@@ -250,7 +250,7 @@ function voiceCard(index) {
   const activity = el("span", {
     class: "voice-card__activity",
     style: { "--voice-color": VOICE_COLORS[index + 1] },
-    title: "Voice inaktiv",
+    title: "Voice inactive",
   });
   const node = el("div", { class: "insight-card voice-card" }, [
     el("div", { class: "voice-card__summary" }, [
@@ -264,11 +264,11 @@ function voiceCard(index) {
     ]),
     el("div", { class: "voice-card__visuals" }, [
       el("div", { class: "voice-card__panel" }, [
-        el("span", {}, "Oszillator"),
+        el("span", {}, "Oscillator"),
         el("div", { class: "voice-card__canvas" }, [oscCanvas]),
       ]),
       el("div", { class: "voice-card__panel" }, [
-        el("span", {}, "Spektrum"),
+        el("span", {}, "Spectrum"),
         el("div", { class: "voice-card__canvas" }, [spectrumCanvas]),
       ]),
     ]),
@@ -360,8 +360,8 @@ function pseudo(n, control, pulseWidth) {
 function filterCard() {
   const canvas = el("canvas");
   const cutoff = metric("Cutoff");
-  const resonance = metric("Resonanz");
-  const mode = metric("Modus");
+  const resonance = metric("Resonance");
+  const mode = metric("Mode");
   const route = metric("Routing");
   const volume = metric("Volume");
   const node = el("div", { class: "insight-card filter-card" }, [
@@ -398,7 +398,7 @@ function registerHeatmap() {
       groupCells.push(el("div", { class: "register-cell register-cell--empty", "aria-hidden": "true" }, [
         el("span", {}, " "),
         el("strong", {}, "--"),
-        el("small", {}, "frei"),
+        el("small", {}, "free"),
       ]));
     }
     node.append(el("section", { class: "register-group" }, [

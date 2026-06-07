@@ -21,6 +21,7 @@ export function createCatalog(raw) {
       track.released,
       track.hvscPath,
       track.originalArtist,
+      track.source,
       track.primaryTuneType,
       track.tuneTypes.join(" "),
     ].filter(Boolean).join(" ").toLowerCase();
@@ -284,7 +285,7 @@ export async function playTrack(ctx, track, queue = null) {
     artistId: track.artistId,
     duration: track.duration,
   };
-  await ctx.engine.loadFromUrl(ctx.catalog.basePath + track.file, source);
+  await ctx.engine.loadFromUrl(trackURL(ctx, track), source);
   await ctx.engine.play({ subtune: track.defaultSubtune || 1 });
   ctx.events.emit("player.track.started", { track });
 }
@@ -317,4 +318,12 @@ export function currentTrack(ctx) {
 export function formatDuration(trackOrSeconds) {
   const seconds = typeof trackOrSeconds === "number" ? trackOrSeconds : trackOrSeconds?.duration;
   return seconds ? fmtTime(seconds) : "--:--";
+}
+
+function trackURL(ctx, track) {
+  const basePath = ctx.catalog.basePath || "../test_tunes/C64Music/";
+  if (basePath.includes("/api/sids/")) {
+    return basePath + String(track.file || "").split("/").map(encodeURIComponent).join("/");
+  }
+  return basePath + track.file;
 }

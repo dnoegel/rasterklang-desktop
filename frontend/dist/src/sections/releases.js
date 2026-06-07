@@ -1,12 +1,12 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { entityCard, pagedGrid, sectionHead, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-05-01-084125";
+import { entityCard, pagedGrid, sectionHead, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
 
 export function mount(host, ctx) {
   const state = { q: "", tuneType: "" };
   const input = el("input", {
     type: "search",
     class: "search-field",
-    placeholder: "Release, Track oder Autor filtern",
+    placeholder: "Filter releases, tracks, or authors",
     oninput: debounce((event) => {
       state.q = event.target.value.trim().toLowerCase();
       render();
@@ -19,7 +19,7 @@ export function mount(host, ctx) {
     },
   });
   const gridHost = el("div", {});
-  host.append(sectionHead("Releases", "HVSC-Dateien als Releases"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
+  host.append(sectionHead("Releases", "HVSC files as releases"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
 
   function render() {
     clear(gridHost);
@@ -35,7 +35,7 @@ export function mount(host, ctx) {
         seed: release.coverSeed,
         onclick: () => ctx.router.navigate("release", { id: release.id }),
       })
-    ), { pageSize: 200, empty: "Keine Releases gefunden." }));
+    ), { pageSize: 200, empty: "No releases found." }));
   }
 
   render();

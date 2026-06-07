@@ -1,5 +1,5 @@
 import { el, svg, fmtTime, clamp } from "../lib/ui.js";
-import { currentTrack, formatDuration, playNextTrack, playPrevTrack } from "../lib/catalog.js?v=2026-05-01-084125";
+import { currentTrack, formatDuration, playNextTrack, playPrevTrack } from "../lib/catalog.js?v=2026-06-06-180836";
 
 export function mountPlayer(host, ctx) {
   let autoAdvanceKey = "";
@@ -10,12 +10,12 @@ export function mountPlayer(host, ctx) {
   const artCanvas = el("canvas", { width: 120, height: 120 });
   const art = el("button", {
     class: "player-art",
-    title: "Insight oeffnen",
+    title: "Open Insight",
     onclick: () => ctx.router?.navigate("insight"),
   }, [artCanvas, el("span", { class: "player-art__chip" }, "SID")]);
-  const titleEl = el("strong", { class: "player-meta__title" }, "Keine SID geladen");
-  const subEl = el("span", { class: "player-meta__sub" }, "Waehle einen Track aus der HVSC");
-  const favBtn = button("heart", "Favorisieren", () => toggleFavorite(), "player-btn--soft");
+  const titleEl = el("strong", { class: "player-meta__title" }, "No SID loaded");
+  const subEl = el("span", { class: "player-meta__sub" }, "Choose a track from the library");
+  const favBtn = button("heart", "Favorite", () => toggleFavorite(), "player-btn--soft");
   const subSelect = el("select", {
     class: "field player-subtune",
     "aria-label": "Subtune",
@@ -35,7 +35,7 @@ export function mountPlayer(host, ctx) {
           refresh();
         }
       } catch (error) {
-        ctx.toast.error(`Subtune konnte nicht gestartet werden: ${error.message || error}`);
+        ctx.toast.error(`Could not start subtune: ${error.message || error}`);
       } finally {
         pendingSubtune = 0;
         subSelect.disabled = false;
@@ -51,16 +51,16 @@ export function mountPlayer(host, ctx) {
   }, [subSelect]);
   const left = el("div", { class: "player-info" }, [art, el("div", { class: "player-meta" }, [titleEl, subEl]), favBtn, subSelectWrap]);
 
-  const prevBtn = button("prev", "Vorheriger Track", () => safePrev());
-  const playBtn = button("play", "Wiedergabe / Pause", () => togglePlay(), "player-btn--primary");
-  const nextBtn = button("next", "Naechster Track", () => safeNext());
+  const prevBtn = button("prev", "Previous track", () => safePrev());
+  const playBtn = button("play", "Play / pause", () => togglePlay(), "player-btn--primary");
+  const nextBtn = button("next", "Next track", () => safeNext());
   const elapsedEl = el("span", {}, "0:00");
   const totalEl = el("span", {}, "--:--");
   const barFill = el("span");
   const progressBar = el("button", {
     class: "player-progress__bar",
-    title: "Zu dieser Position springen",
-    "aria-label": "Zu dieser Position springen",
+    title: "Seek to this position",
+    "aria-label": "Seek to this position",
     onclick: (event) => seekFromProgress(event),
   }, [barFill]);
   const progress = el("div", { class: "player-progress" }, [
@@ -76,7 +76,7 @@ export function mountPlayer(host, ctx) {
   const scopeCanvas = el("canvas", { width: 260, height: 88 });
   const scope = el("button", {
     class: "player-scope",
-    title: "Live Insight oeffnen",
+    title: "Open live Insight",
     onclick: () => ctx.router?.navigate("insight"),
   }, [scopeCanvas]);
   const volSlider = el("input", {
@@ -90,7 +90,7 @@ export function mountPlayer(host, ctx) {
       updateVolumeLabel(ctx.engine.snapshot());
     },
   });
-  const muteBtn = button("volume", "Stumm", () => ctx.engine.toggleMute());
+  const muteBtn = button("volume", "Mute", () => ctx.engine.toggleMute());
   const volValue = el("span", { class: "player-vol__value" }, "78%");
   const eqBtn = button("eq", "Equalizer", () => toggleEqPanel(), "player-btn--soft");
   const eqPanel = buildEqualizerPanel();
@@ -123,7 +123,7 @@ export function mountPlayer(host, ctx) {
   async function togglePlay() {
     if (transportBusy) return;
     if (!ctx.engine.getCurrentTune()) {
-      ctx.toast.warn("Kein Track geladen.");
+      ctx.toast.warn("No track loaded.");
       return;
     }
     transportBusy = true;
@@ -136,8 +136,8 @@ export function mountPlayer(host, ctx) {
         await ctx.engine.play({ subtune: ctx.engine.getSubtune() });
       }
     } catch (error) {
-      const action = ctx.engine.isPlaying() || ctx.engine.isPaused() ? "umschalten" : "starten";
-      ctx.toast.error(`Konnte Wiedergabe nicht ${action}: ${error.message || error}`);
+      const action = ctx.engine.isPlaying() || ctx.engine.isPaused() ? "toggle" : "start";
+      ctx.toast.error(`Could not ${action} playback: ${error.message || error}`);
     } finally {
       transportBusy = false;
       playBtn.disabled = false;
@@ -149,18 +149,18 @@ export function mountPlayer(host, ctx) {
   async function safeNext() {
     try {
       const ok = await playNextTrack(ctx);
-      if (!ok) ctx.toast.warn("Keine Queue aktiv.");
+      if (!ok) ctx.toast.warn("No active queue.");
     } catch (error) {
-      ctx.toast.error(`Naechster Track fehlgeschlagen: ${error.message || error}`);
+      ctx.toast.error(`Next track failed: ${error.message || error}`);
     }
   }
 
   async function safePrev() {
     try {
       const ok = await playPrevTrack(ctx);
-      if (!ok) ctx.toast.warn("Keine Queue aktiv.");
+      if (!ok) ctx.toast.warn("No active queue.");
     } catch (error) {
-      ctx.toast.error(`Vorheriger Track fehlgeschlagen: ${error.message || error}`);
+      ctx.toast.error(`Previous track failed: ${error.message || error}`);
     }
   }
 
@@ -182,19 +182,19 @@ export function mountPlayer(host, ctx) {
     });
     const sliders = {
       bass: eqSlider("Bass", "bass"),
-      mid: eqSlider("Mitten", "mid"),
-      treble: eqSlider("Hoehen", "treble"),
+      mid: eqSlider("Mids", "mid"),
+      treble: eqSlider("Treble", "treble"),
     };
     const presets = [
       ["Flat", { enabled: true, bass: 0, mid: 0, treble: 0 }],
       ["Warm", { enabled: true, bass: 3, mid: 1, treble: -2 }],
-      ["Klar", { enabled: true, bass: -1, mid: 0, treble: 3 }],
+      ["Clear", { enabled: true, bass: -1, mid: 0, treble: 3 }],
       ["Bass", { enabled: true, bass: 5, mid: 0, treble: -1 }],
     ];
     const node = el("div", { class: "player-eq-panel", hidden: true }, [
       el("div", { class: "player-eq-panel__head" }, [
         el("strong", {}, "Equalizer"),
-        el("label", { class: "player-eq-panel__toggle" }, [enabled, el("span", {}, "An")]),
+        el("label", { class: "player-eq-panel__toggle" }, [enabled, el("span", {}, "On")]),
       ]),
       sliders.bass.node,
       sliders.mid.node,
@@ -257,7 +257,7 @@ export function mountPlayer(host, ctx) {
     const snap = ctx.engine.snapshot();
     const duration = currentDuration(snap, track);
     if (!duration) {
-      ctx.toast.warn("Fuer diesen Track ist keine Laenge bekannt.");
+      ctx.toast.warn("No length is known for this track.");
       return;
     }
 
@@ -266,7 +266,7 @@ export function mountPlayer(host, ctx) {
     try {
       await ctx.engine.seek(duration * ratio);
     } catch (error) {
-      ctx.toast.error(`Springen fehlgeschlagen: ${error.message || error}`);
+      ctx.toast.error(`Seek failed: ${error.message || error}`);
     }
   }
 
@@ -292,13 +292,13 @@ export function mountPlayer(host, ctx) {
       totalEl.textContent = formatDuration(duration);
       favBtn.dataset.active = ctx.favorites.has(track.id) ? "true" : "false";
     } else if (tune) {
-      titleEl.textContent = tune.metadata.title || tune.source?.label || "Unbenannt";
+      titleEl.textContent = tune.metadata.title || tune.source?.label || "Untitled";
       subEl.textContent = tune.metadata.author || "Unknown";
       totalEl.textContent = "--:--";
       favBtn.dataset.active = "false";
     } else {
-      titleEl.textContent = "Keine SID geladen";
-      subEl.textContent = "Waehle einen Track aus der HVSC";
+      titleEl.textContent = "No SID loaded";
+      subEl.textContent = "Choose a track from the library";
       totalEl.textContent = "--:--";
       favBtn.dataset.active = "false";
     }
@@ -341,13 +341,13 @@ export function mountPlayer(host, ctx) {
       if (!ok) return ctx.engine.stop();
       return null;
     }).catch((error) => {
-      ctx.toast.error(`Naechster Track fehlgeschlagen: ${error.message || error}`);
+      ctx.toast.error(`Next track failed: ${error.message || error}`);
     });
   }
 
   function updateVolumeLabel(snap) {
     const pct = Math.round((snap.volume || 0) * 100);
-    volValue.textContent = snap.muted ? "Stumm" : `${pct}%`;
+    volValue.textContent = snap.muted ? "Muted" : `${pct}%`;
     volSlider.value = String(snap.volume || 0);
   }
 

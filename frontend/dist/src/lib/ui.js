@@ -67,6 +67,7 @@ export function svg(name, size = 18) {
     eq:      "M6 4h2v7h2v2H8v7H6v-7H4v-2h2zM11 4h2v3h2v2h-2v11h-2V9H9V7h2zM16 4h2v10h2v2h-2v4h-2v-4h-2v-2h2z",
     heart:   "M12 21s-7.5-4.7-9.3-9.3C1.2 8 3.4 5 6.8 5c2 0 3.4 1 4.2 2.1C11.8 6 13.2 5 15.2 5c3.4 0 5.6 3 4.1 6.7C19.5 16.3 12 21 12 21z",
     artist:  "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0z",
+    external:"M5 5h7v2H8.4l6.6 6.6-1.4 1.4L7 8.4V12H5zM5 15h2v2h10V7h-2V5h4v14H5z",
     album:   "M5 4h14v16H5zM8 7h8v8H8zM10 17h4v1h-4z",
     list:    "M5 6h14v2H5zM5 11h14v2H5zM5 16h14v2H5z",
     clock:   "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm1 5v4l3 2-1 1.7-4-2.7V8z",

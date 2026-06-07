@@ -17,7 +17,7 @@ type Favorites struct {
 func LoadFavorites() *Favorites {
 	f := &Favorites{set: map[string]bool{}}
 	if dir, err := os.UserConfigDir(); err == nil {
-		f.path = filepath.Join(dir, "zmk-nativeplayer", "favorites.json")
+		f.path = filepath.Join(dir, "rasterklang", "favorites.json")
 	}
 	if f.path == "" {
 		return f

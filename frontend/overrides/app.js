@@ -45,7 +45,7 @@ async function boot() {
     version: APP_VERSION,
   };
   ctx.favorites = await createNativeFavorites(ctx);
-  window.zmkWebplayer = ctx;
+  window.rasterklangWebplayer = ctx;
 
   await engine.loadSDK();
   await mountShell(document.getElementById("app"), ctx);
@@ -65,7 +65,7 @@ function mountMacTitlebarDragRegion() {
 }
 
 boot().catch((error) => {
-  console.error("[zmk-nativeplayer] Boot failed:", error);
+  console.error("[rasterklang-desktop] Boot failed:", error);
   const app = document.getElementById("app");
   if (app) {
     app.innerHTML = `

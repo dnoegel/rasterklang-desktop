@@ -1,12 +1,12 @@
-import { mountShell } from "./src/shell/shell.js?v=2026-05-01-084125";
+import { mountShell } from "./src/shell/shell.js?v=2026-06-06-180836";
 import { createNativeEngineController } from "./src/lib/native-engine.js";
 import { createEventBus } from "./src/lib/events.js";
 import { createToast } from "./src/lib/ui.js";
-import { createCatalog } from "./src/lib/catalog.js?v=2026-05-01-084125";
+import { createCatalog } from "./src/lib/catalog.js?v=2026-06-06-180836";
 import { createNativeFavorites } from "./src/lib/native-favorites.js";
 import { ChooseHVSCRoot, GetLibraryState } from "./wailsjs/go/main/App.js";
 
-const APP_VERSION = "2026-05-01-084125";
+const APP_VERSION = "2026-06-06-180836";
 const APP_NAME = "Rasterklang";
 
 async function boot() {
@@ -45,7 +45,7 @@ async function boot() {
     version: APP_VERSION,
   };
   ctx.favorites = await createNativeFavorites(ctx);
-  window.zmkWebplayer = ctx;
+  window.rasterklangWebplayer = ctx;
 
   await engine.loadSDK();
   await mountShell(document.getElementById("app"), ctx);
@@ -65,7 +65,7 @@ function mountMacTitlebarDragRegion() {
 }
 
 boot().catch((error) => {
-  console.error("[zmk-nativeplayer] Boot failed:", error);
+  console.error("[rasterklang-desktop] Boot failed:", error);
   const app = document.getElementById("app");
   if (app) {
     app.innerHTML = `

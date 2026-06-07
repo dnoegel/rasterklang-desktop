@@ -5,11 +5,10 @@
 //   - Events broadcast over the shared event bus
 //
 // All higher-level UI uses this controller; nothing imports the SDK directly.
-import { loadSdk } from "./sdk.js?v=2026-05-01-084125";
+import { loadSdk } from "./sdk.js?v=2026-06-06-180836";
 
-const SEEK_SPEED = 60;
-const SEEK_SLICE_SECONDS = 0.5;
-const EQ_STORAGE_KEY = "zmk-webplayer:eq";
+const SEEK_YIELD_MS = 16;
+const EQ_STORAGE_KEY = "rasterklang-webplayer:eq";
 const DEFAULT_EQUALIZER = {
   enabled: true,
   bass: 0,
@@ -24,7 +23,7 @@ export function createEngineController({ events, toast }) {
     sdkPromise: null,
     capabilities: null,
 
-    tune: null,           // ZmkSidTune
+    tune: null,           // RasterklangTune
     tuneBytes: null,      // raw Uint8Array
     tuneSource: null,     // { kind: "library"|"upload", file, label }
     metadata: null,
@@ -129,7 +128,7 @@ export function createEngineController({ events, toast }) {
       const sdk = await loadSdk();
       state.sdk = sdk;
       if (!sdk.ok) {
-        state.sdkError = sdk.error?.message || "WASM nicht verfuegbar.";
+        state.sdkError = sdk.error?.message || "WASM unavailable.";
         events.emit("engine.sdk.error", state.sdkError);
         emitState();
         return null;
@@ -150,7 +149,7 @@ export function createEngineController({ events, toast }) {
   async function ensureSDK() {
     if (!state.sdkPromise) await loadSDK();
     else await state.sdkPromise;
-    if (!state.sdk?.ok) throw new Error(state.sdkError || "WASM nicht geladen.");
+    if (!state.sdk?.ok) throw new Error(state.sdkError || "WASM not loaded.");
     return state.sdk.sid;
   }
 
@@ -158,7 +157,7 @@ export function createEngineController({ events, toast }) {
 
   async function loadFromUrl(url, source) {
     const response = await fetch(url, { cache: "force-cache" });
-    if (!response.ok) throw new Error(`Konnte ${url} nicht laden (${response.status}).`);
+    if (!response.ok) throw new Error(`Could not load ${url} (${response.status}).`);
     const bytes = new Uint8Array(await response.arrayBuffer());
     return loadFromBytes(bytes, source);
   }
@@ -190,7 +189,7 @@ export function createEngineController({ events, toast }) {
   }
 
   async function play({ subtune, traceMask, startAt = 0, paused = false } = {}) {
-    if (!state.tune) throw new Error("Lade zuerst eine SID Datei.");
+    if (!state.tune) throw new Error("Load a SID file first.");
     const audio = getAudio();
     await audio.resume();
     const runToken = ++state.seekToken;
@@ -245,7 +244,7 @@ export function createEngineController({ events, toast }) {
         state.seeking = false;
         state.playing = false;
         applySeekMute(false);
-        toast.error(`Springen fehlgeschlagen: ${error.message || error}`);
+        toast.error(`Seek failed: ${error.message || error}`);
         events.emit("engine.play.error", error);
         emitState();
         return;
@@ -298,7 +297,7 @@ export function createEngineController({ events, toast }) {
           scheduledTime = startAt + buf.duration;
         }
       } catch (error) {
-        toast.error(`Wiedergabefehler: ${error.message || error}`);
+        toast.error(`Playback error: ${error.message || error}`);
         events.emit("engine.play.error", error);
         stopped = true;
         state.playing = false;
@@ -374,7 +373,7 @@ export function createEngineController({ events, toast }) {
   }
 
   async function seek(seconds) {
-    if (!state.tune) throw new Error("Lade zuerst eine SID Datei.");
+    if (!state.tune) throw new Error("Load a SID file first.");
     const target = Math.max(0, Number(seconds) || 0);
     const subtune = state.currentSubtune || state.metadata?.defaultSubtune || 1;
     const shouldStayPaused = !state.playing || state.paused;
@@ -413,7 +412,7 @@ export function createEngineController({ events, toast }) {
         state.seeking = false;
         state.playing = false;
         applySeekMute(false);
-        toast.error(`Springen fehlgeschlagen: ${error.message || error}`);
+        toast.error(`Seek failed: ${error.message || error}`);
         events.emit("engine.play.error", error);
         emitState();
         return;
@@ -459,15 +458,15 @@ export function createEngineController({ events, toast }) {
     const totalFrames = Math.max(0, Math.floor(seconds * sampleRate));
     let remaining = totalFrames;
     const maxChunk = Number(state.capabilities?.limits?.maxChunkFrames || 65536);
-    const chunkFrames = Math.max(4096, Math.min(maxChunk, Math.round(sampleRate * SEEK_SLICE_SECONDS)));
+    const chunkFrames = Math.max(1, Math.floor(maxChunk));
     const startedAt = performance.now();
+    let lastYieldAt = startedAt;
     let advanced = 0;
 
     while (remaining > 0) {
       if (token !== state.seekToken || !state.playing) return;
       const frames = Math.min(chunkFrames, remaining);
-      const samples = stream.readChunk(frames);
-      const read = samples?.length || 0;
+      const read = skipStreamSamples(stream, frames);
       if (read <= 0) break;
       remaining -= read;
       advanced += read;
@@ -477,17 +476,31 @@ export function createEngineController({ events, toast }) {
       events.emit("engine.seek.progress", {
         elapsed: state.elapsed,
         target: baseElapsed + seconds,
-        speed: SEEK_SPEED,
+        speed: measuredSeekSpeed(advanced, sampleRate, startedAt),
       });
 
-      const expectedMs = (advanced / sampleRate / SEEK_SPEED) * 1000;
-      const waitMs = expectedMs - (performance.now() - startedAt);
-      if (waitMs > 1) {
-        await sleep(Math.min(waitMs, 24));
-      } else {
+      const now = performance.now();
+      if (now - lastYieldAt >= SEEK_YIELD_MS) {
         await sleep(0);
+        lastYieldAt = performance.now();
       }
     }
+  }
+
+  function measuredSeekSpeed(advancedFrames, sampleRate, startedAt) {
+    const elapsedMs = Math.max(1, performance.now() - startedAt);
+    return (advancedFrames / sampleRate) / (elapsedMs / 1000);
+  }
+
+  function skipStreamSamples(stream, frames) {
+    if (typeof stream.fastForwardSamples === "function") {
+      return stream.fastForwardSamples(frames);
+    }
+    if (typeof stream.skipSamples === "function") {
+      return stream.skipSamples(frames);
+    }
+    const samples = stream.readChunk(frames);
+    return samples?.length || 0;
   }
 
   function setVolume(value) {
@@ -587,10 +600,10 @@ export function createEngineController({ events, toast }) {
   // Step mode: returns a fresh DebugStream tied to the current tune that the
   // caller manages directly (Note Lab uses this).
   async function createStepStream({ subtune = 0, traceMask = 0xFF } = {}) {
-    if (!state.tune) throw new Error("Lade zuerst eine SID Datei.");
+    if (!state.tune) throw new Error("Load a SID file first.");
     const sid = await ensureSDK();
     if (!sid.capabilities().features?.stepInstruction) {
-      throw new Error("Diese WASM-Build unterstuetzt kein Instruction-Stepping.");
+      throw new Error("This WASM build does not support instruction stepping.");
     }
     return state.tune.createDebugStream({
       subtune,

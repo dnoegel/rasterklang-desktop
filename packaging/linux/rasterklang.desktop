@@ -2,7 +2,7 @@
 Type=Application
 Name=Rasterklang
 Comment=Local HVSC SID player
-Exec=rasterklang
+Exec=rasterklang-desktop
 Icon=rasterklang
 Terminal=false
 Categories=Audio;AudioVideo;Player;

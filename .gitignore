@@ -1,5 +1,7 @@
 /bin/
-/zmk-nativeplayer
+/rasterklang-desktop
 /build/*.app/
 /build/*.icns
 /build/*.iconset/
+go.work
+go.work.sum

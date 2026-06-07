@@ -30,7 +30,7 @@ export function createRouter({ container, sections, ctx, onChange }) {
       mod = await section.load();
     } catch (error) {
       console.error(`[router] failed to load section ${name}:`, error);
-      host.append(el("div", { class: "empty-state" }, `Bereich konnte nicht geladen werden: ${error.message || error}`));
+      host.append(el("div", { class: "empty-state" }, `Section could not be loaded: ${error.message || error}`));
       return;
     }
     let api;
@@ -38,7 +38,7 @@ export function createRouter({ container, sections, ctx, onChange }) {
       api = mod.mount ? mod.mount(host, ctx, params) : null;
     } catch (error) {
       console.error(`[router] mount failed for ${name}:`, error);
-      host.append(el("div", { class: "empty-state" }, `Fehler im Bereich: ${error.message || error}`));
+      host.append(el("div", { class: "empty-state" }, `Section error: ${error.message || error}`));
       return;
     }
     current = { name, module: api || {}, params };
@@ -71,5 +71,12 @@ export function createRouter({ container, sections, ctx, onChange }) {
     }
   }
 
-  return { go, navigate, attachHashListener, current: () => current };
+  function refresh() {
+    if (!current) return;
+    const { name, params } = current;
+    current = null;
+    go(name, params);
+  }
+
+  return { go, navigate, refresh, attachHashListener, current: () => current };
 }

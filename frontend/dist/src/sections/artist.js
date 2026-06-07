@@ -1,14 +1,15 @@
 import { clear, el, svg } from "../lib/ui.js";
-import { playTrack } from "../lib/catalog.js?v=2026-05-01-084125";
-import { cover, pill, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-05-01-084125";
+import { playTrack } from "../lib/catalog.js?v=2026-06-06-180836";
+import { cover, pill, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
 
 export function mount(host, ctx, params = {}) {
   const artist = ctx.catalog.artistById.get(params.id);
   if (!artist) {
-    host.append(el("div", { class: "empty-state" }, "Profil nicht gefunden."));
+    host.append(el("div", { class: "empty-state" }, "Profile not found."));
     return;
   }
   const tracks = ctx.catalog.artistTracks(artist.id);
+  const artistInfoUrl = artist.type === "artist" ? bestArtistInfoUrl(tracks) : "";
   const state = { tuneType: "" };
   const tableHost = el("div", {});
   const typeSelect = tuneTypeSelect(ctx, {
@@ -23,16 +24,23 @@ export function mount(host, ctx, params = {}) {
       el("p", { class: "kicker" }, typeLabel(artist.type)),
       el("h1", {}, artist.name),
       el("div", { class: "pill-row" }, [
-        pill("Tracks", tracks.length.toLocaleString("de-DE")),
-        pill("Typ", typeLabel(artist.type)),
+        pill("Tracks", tracks.length.toLocaleString("en-US")),
+        pill("Type", typeLabel(artist.type)),
       ]),
       el("div", { class: "hero-actions" }, [
-        el("button", { class: "btn btn--accent", onclick: () => tracks[0] && playTrack(ctx, tracks[0], tracks) }, [svg("play", 16), "Abspielen"]),
+        el("button", { class: "btn btn--accent", onclick: () => tracks[0] && playTrack(ctx, tracks[0], tracks) }, [svg("play", 16), "Play"]),
+        artistInfoUrl ? el("a", {
+          class: "btn btn--ghost",
+          href: artistInfoUrl,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          title: "Open artist info in a new tab",
+        }, [svg("external", 16), "Artist Info"]) : null,
       ]),
     ]),
   ]));
 
-  host.append(sectionHead("Tracks", "SID-Dateien dieses Profils"));
+  host.append(sectionHead("Tracks", "SID files for this profile"));
   host.append(el("section", { class: "search-panel" }, [typeSelect]), tableHost);
   renderTracks();
 
@@ -41,4 +49,11 @@ export function mount(host, ctx, params = {}) {
     clear(tableHost);
     tableHost.append(trackTable(ctx, filtered, { pageSize: 200, queue: filtered }));
   }
+}
+
+function bestArtistInfoUrl(tracks) {
+  const track = tracks.find((item) => String(item.file || "").startsWith("MUSICIANS/")) || tracks[0];
+  if (!track?.file) return "";
+  const folder = track.file.split("/").slice(0, -1).join("/");
+  return `https://deepsid.chordian.net/?file=${encodeURIComponent(folder || track.file)}`;
 }

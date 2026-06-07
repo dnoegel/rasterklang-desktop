@@ -472,8 +472,10 @@ html[data-platform="mac"] .native-titlebar-drag-region {
   min-height: 38px;
   padding: 0 16px;
   border-radius: var(--radius-pill);
+  color: inherit;
   font-weight: 700;
   font-size: 13px;
+  text-decoration: none;
   transition: transform var(--transition), background var(--transition);
 }
 
@@ -615,6 +617,16 @@ button.track-row:hover {
   color: var(--fg-1);
 }
 
+button.track-row[data-current="true"] {
+  background: rgba(56, 243, 163, 0.11);
+  color: var(--fg-1);
+  box-shadow: inset 3px 0 0 var(--accent-1);
+}
+
+button.track-row[data-current="true"]:hover {
+  background: rgba(56, 243, 163, 0.15);
+}
+
 .track-row--head {
   min-height: 34px;
   color: var(--fg-3);
@@ -625,6 +637,33 @@ button.track-row:hover {
 
 .track-row__title {
   min-width: 0;
+}
+
+.track-row__index {
+  display: grid;
+  place-items: center;
+}
+
+.track-row__now {
+  width: 22px;
+  height: 22px;
+  display: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent-1);
+  background: rgba(56, 243, 163, 0.13);
+}
+
+.track-row[data-current="true"] .track-row__number {
+  display: none;
+}
+
+.track-row[data-current="true"] .track-row__now {
+  display: grid;
+}
+
+.track-row[data-current="true"][data-playing="true"] .track-row__now {
+  box-shadow: 0 0 0 4px rgba(56, 243, 163, 0.08);
 }
 
 .track-row__title strong,

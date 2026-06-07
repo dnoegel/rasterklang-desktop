@@ -1,13 +1,13 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=2026-05-01-084125";
+import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=2026-06-06-180836";
 
 export function mount(host, ctx) {
   mountTypeBrowser(host, ctx, {
     title: "Demos",
-    subtitle: "Demos, Intros und Tools aus der HVSC als direkt abspielbare SID-Dateien",
-    placeholder: "Demo suchen",
+    subtitle: "Demos, intros, and tools from the HVSC as directly playable SID files",
+    placeholder: "Search demos",
     tracks: ctx.catalog.demos,
-    empty: "Keine Demos gefunden.",
+    empty: "No demos found.",
   });
 }
 

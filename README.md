@@ -4,18 +4,18 @@
 | --- | --- |
 | ![Rasterklang Desktop search view](docs/assets/Search.png) | ![Rasterklang Desktop audio insight view](docs/assets/Insight.png) |
 
-`rk-desktop` is the native desktop player for Rasterklang. It packages the
+`rasterklang-desktop` is the native desktop player for Rasterklang. It packages the
 shared web player interface with a local Go/Wails shell and plays HVSC SID files
-through the native `github.com/dnoegel/zmk-sid` audio engine.
+through the native `github.com/dnoegel/rasterklang` audio engine.
 
-The UI and catalog browsing experience are shared with `rk-webplayer`, but
+The UI and catalog browsing experience are shared with `rasterklang-webplayer`, but
 audio playback, HVSC folder selection, configuration, equalizer state, and
 debug snapshots are handled locally by the desktop app.
 
 ## Run
 
 ```sh
-cd rk-desktop
+cd rasterklang-desktop
 make run
 ```
 
@@ -28,8 +28,8 @@ selection is stored in the platform user config directory.
 
 Favorites are stored as track IDs in `favorites.json` next to `config.json` in
 the platform user config directory. On macOS this is usually
-`~/Library/Application Support/zmk-nativeplayer`; on Linux it is usually
-`$XDG_CONFIG_HOME/zmk-nativeplayer` or `~/.config/zmk-nativeplayer`. Existing
+`~/Library/Application Support/rasterklang`; on Linux it is usually
+`$XDG_CONFIG_HOME/rasterklang` or `~/.config/rasterklang`. Existing
 favorites from the older WebView `localStorage` key are imported on startup.
 
 ## Build
@@ -38,7 +38,7 @@ favorites from the older WebView `localStorage` key are imported on startup.
 make build
 ```
 
-This creates `bin/rasterklang`. The web UI, app icon, and
+This creates `bin/rasterklang-desktop`. The web UI, app icon, and
 `hvsc-library.json` manifest are embedded into the binary. The actual HVSC SID
 files stay on your local disk.
 
@@ -62,7 +62,7 @@ On macOS, this builds `build/Rasterklang.app` and installs it to
 INSTALL_APP_DIR="$HOME/Applications" make install
 ```
 
-On Linux, this installs the binary as `rasterklang`, plus a desktop entry and
+On Linux, this installs the binary as `rasterklang-desktop`, plus a desktop entry and
 icon under `PREFIX`.
 
 ```sh
@@ -89,7 +89,7 @@ The Makefile adds the Wails linker flags required for
 
 ## Architecture
 
-- `../zmk-webplayer` is the source for the shared UI: shell, sections, player,
+- `../rasterklang-webplayer` is the source for the shared UI: shell, sections, player,
   catalog logic, and CSS.
 - `frontend/overrides` contains only the desktop-specific frontend layer:
   Wails bootstrap, native engine bridge, and Wails bindings.
@@ -100,7 +100,7 @@ The Makefile adds the Wails linker flags required for
   browser engine, but delegates playback to Wails/Go.
 - `app.go` provides native dialogs, HVSC root configuration, and playback API
   methods.
-- `audio.go` renders SID audio with `github.com/dnoegel/zmk-sid` and outputs it
+- `audio.go` renders SID audio with `github.com/dnoegel/rasterklang` and outputs it
   through Oto.
 
 ## Sync The Web UI
@@ -112,5 +112,5 @@ make sync-webplayer
 The source directory and asset version can be overridden:
 
 ```sh
-WEBPLAYER_DIR=../zmk-webplayer ASSET_VERSION=dev make sync-webplayer
+WEBPLAYER_DIR=../rasterklang-webplayer ASSET_VERSION=dev make sync-webplayer
 ```

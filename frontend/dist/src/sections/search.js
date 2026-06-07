@@ -1,5 +1,5 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { entityCard, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-05-01-084125";
+import { entityCard, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
 
 let api = null;
 
@@ -8,7 +8,7 @@ export function mount(host, ctx, params = {}) {
   const input = el("input", {
     type: "search",
     class: "search-field",
-    placeholder: "Titel, Autor, Game, Pfad oder Release",
+    placeholder: "Title, author, game, path, or release",
     value: params.q || "",
   });
   const typeSelect = tuneTypeSelect(ctx, {
@@ -25,18 +25,18 @@ export function mount(host, ctx, params = {}) {
     const tuneType = state.tuneType;
     clear(resultHost);
     if (!q && !tuneType) {
-      resultHost.append(sectionHead("Suche", "Suchbegriff eingeben, Enter ist nicht noetig."));
-      resultHost.append(el("div", { class: "empty-state" }, "Bereit fuer HVSC-Suche."));
+      resultHost.append(sectionHead("Search", "Enter a search term; Enter is not required."));
+      resultHost.append(el("div", { class: "empty-state" }, "Ready for HVSC search."));
       return;
     }
     const results = ctx.catalog.search(q, q ? 400 : ctx.catalog.tracks.length, { tuneType });
-    resultHost.append(sectionHead("Top Treffer", `${results.tracks.length} Tracks, ${results.artists.length} Profile`));
+    resultHost.append(sectionHead("Top results", `${results.tracks.length} Tracks, ${results.artists.length} Profiles`));
     if (results.artists.length) {
       const grid = el("div", { class: "entity-grid entity-grid--compact" });
       for (const artist of results.artists.slice(0, 8)) {
         grid.append(entityCard({
           title: artist.name,
-          subtitle: `${artist.trackCount.toLocaleString("de-DE")} Tracks`,
+          subtitle: `${artist.trackCount.toLocaleString("en-US")} Tracks`,
           kind: typeLabel(artist.type),
           seed: artist.id,
           onclick: () => ctx.router.navigate("artist", { id: artist.id }),
@@ -44,7 +44,7 @@ export function mount(host, ctx, params = {}) {
       }
       resultHost.append(grid);
     }
-    resultHost.append(trackTable(ctx, results.tracks, { pageSize: 200, queue: results.tracks, empty: "Keine Tracks gefunden." }));
+    resultHost.append(trackTable(ctx, results.tracks, { pageSize: 200, queue: results.tracks, empty: "No tracks found." }));
   }
 
   input.addEventListener("input", debounce(render, 120));

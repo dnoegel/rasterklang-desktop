@@ -4,7 +4,7 @@ import {
   SetFavorites,
 } from "../../wailsjs/go/main/App.js";
 
-const LEGACY_STORAGE_KEY = "zmk-webplayer:favorites:v1";
+const LEGACY_STORAGE_KEY = "rasterklang-webplayer:favorites:v1";
 
 export async function createNativeFavorites(ctx) {
   let ids = new Set(normalizeState(await GetFavorites()));

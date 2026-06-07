@@ -1,18 +1,18 @@
 import { el, clear, svg } from "../lib/ui.js";
 import { createRouter } from "./router.js";
-import { mountPlayer } from "./player.js?v=2026-05-01-084125";
+import { mountPlayer } from "./player.js?v=2026-06-06-180836";
 
-const SECTION_VERSION = "2026-05-01-084125";
+const SECTION_VERSION = "2026-06-06-180836";
 
 const SECTIONS = {
   home: { label: "Home", icon: "home", load: () => loadSection("home") },
-  search: { label: "Suche", icon: "search", load: () => loadSection("search") },
-  artists: { label: "Interpreten", icon: "artist", load: () => loadSection("artists") },
+  search: { label: "Search", icon: "search", load: () => loadSection("search") },
+  artists: { label: "Artists", icon: "artist", load: () => loadSection("artists") },
   games: { label: "Games", icon: "grid", load: () => loadSection("games") },
   demos: { label: "Demos", icon: "spark", load: () => loadSection("demos") },
-  favorites: { label: "Lieblingslieder", icon: "heart", load: () => loadSection("favorites") },
+  favorites: { label: "Favorites", icon: "heart", load: () => loadSection("favorites") },
   insight: { label: "Insight", icon: "insight", load: () => loadSection("insight") },
-  artist: { label: "Interpret", icon: "artist", load: () => loadSection("artist") },
+  artist: { label: "Artist", icon: "artist", load: () => loadSection("artist") },
   release: { label: "Release", icon: "album", load: () => loadSection("release") },
 };
 
@@ -23,7 +23,7 @@ function loadSection(name) {
 export async function mountShell(rootEl, ctx) {
   clear(rootEl);
   rootEl.removeAttribute("data-loading");
-  const brandName = ctx.brandName || "zmk-webplayer";
+  const brandName = ctx.brandName || "Rasterklang";
 
   const sidebar = el("aside", { class: "shell-sidebar" });
   const main = el("main", { class: "shell-main" });
@@ -32,7 +32,7 @@ export async function mountShell(rootEl, ctx) {
 
   const navItems = new Map();
   function renderNav() {
-    const nav = el("nav", { class: "shell-sidebar__nav", "aria-label": "Hauptbereiche" });
+    const nav = el("nav", { class: "shell-sidebar__nav", "aria-label": "Main sections" });
     for (const key of ["home", "search", "artists", "games", "demos", "favorites"]) {
       const def = SECTIONS[key];
       const btn = el("button", {
@@ -51,7 +51,7 @@ export async function mountShell(rootEl, ctx) {
   const searchInput = el("input", {
     type: "search",
     class: "top-search",
-    placeholder: "Titel, Interpreten, Games, Demos suchen",
+    placeholder: "Search titles, artists, games, demos",
     onkeydown: (event) => {
       if (event.key !== "Enter") return;
       const q = event.currentTarget.value.trim();
@@ -60,7 +60,7 @@ export async function mountShell(rootEl, ctx) {
   });
   const runtimePill = el("span", { class: "runtime-pill", dataset: { state: "loading" } }, [
     el("span", { class: "dot" }),
-    el("span", { class: "label" }, ctx.native ? "Native startet" : "WASM laedt"),
+    el("span", { class: "label" }, ctx.native ? "Native starting" : "WASM loading"),
   ]);
   const header = el("header", { class: "shell-main__header" }, [
     el("div", { class: "shell-main__crumbs" }, [title]),
@@ -89,21 +89,26 @@ export async function mountShell(rootEl, ctx) {
 
   function updateRuntime() {
     const snap = ctx.engine.snapshot();
-    if (snap.ready) {
+    const index = ctx.index;
+    if (index?.indexing) {
+      runtimePill.dataset.state = "loading";
+      runtimePill.querySelector(".label").textContent = `Index ${Number(index.filesIndexed || 0).toLocaleString("en-US")}`;
+    } else if (snap.ready) {
       runtimePill.dataset.state = "ready";
-      runtimePill.querySelector(".label").textContent = ctx.native ? "Native bereit" : "WASM bereit";
+      runtimePill.querySelector(".label").textContent = ctx.native ? "Native ready" : "WASM ready";
     } else if (snap.error) {
       runtimePill.dataset.state = "error";
-      runtimePill.querySelector(".label").textContent = ctx.native ? "Native Fehler" : "WASM Fehler";
+      runtimePill.querySelector(".label").textContent = ctx.native ? "Native error" : "WASM error";
       runtimePill.title = snap.error;
     } else {
       runtimePill.dataset.state = "loading";
-      runtimePill.querySelector(".label").textContent = ctx.native ? "Native startet" : "WASM laedt";
+      runtimePill.querySelector(".label").textContent = ctx.native ? "Native starting" : "WASM loading";
     }
   }
   ctx.events.on("engine.sdk.ready", updateRuntime);
   ctx.events.on("engine.sdk.error", updateRuntime);
   ctx.events.on("engine.state", updateRuntime);
+  ctx.events.on("index.status", updateRuntime);
   updateRuntime();
 
   router.attachHashListener();
@@ -111,30 +116,48 @@ export async function mountShell(rootEl, ctx) {
 }
 
 function renderBrand(ctx) {
-  const brandName = ctx.brandName || "zmk-webplayer";
+  const brandName = ctx.brandName || "Rasterklang";
+  const count = el("small", {}, `SID ${ctx.library.trackCount.toLocaleString("en-US")} Tracks`);
+  ctx.events.on("library.changed", () => {
+    count.textContent = `SID ${ctx.library.trackCount.toLocaleString("en-US")} Tracks`;
+  });
   return el("div", { class: "shell-sidebar__brand" }, [
     el("div", { class: "shell-sidebar__brand-mark" }, [el("span", {}, "SID")]),
     el("div", {}, [
       el("h1", {}, brandName),
-      el("small", {}, `HVSC ${ctx.library.trackCount.toLocaleString("de-DE")} Tracks`),
+      count,
     ]),
   ]);
 }
 
 function renderStats(ctx) {
-  const artistCount = ctx.catalog.artists.filter((artist) => artist.type === "artist").length;
+  const values = {
+    tracks: el("strong", {}, "0"),
+    artists: el("strong", {}, "0"),
+    games: el("strong", {}, "0"),
+    demos: el("strong", {}, "0"),
+  };
+  function paint() {
+    const artistCount = ctx.catalog.artists.filter((artist) => artist.type === "artist").length;
+    values.tracks.textContent = ctx.library.trackCount.toLocaleString("en-US");
+    values.artists.textContent = artistCount.toLocaleString("en-US");
+    values.games.textContent = ctx.catalog.games.length.toLocaleString("en-US");
+    values.demos.textContent = ctx.catalog.demos.length.toLocaleString("en-US");
+  }
+  ctx.events.on("library.changed", paint);
+  paint();
   return el("div", { class: "sidebar-stat-grid" }, [
-    miniStat("Tracks", ctx.library.trackCount.toLocaleString("de-DE")),
-    miniStat("Interpreten", artistCount.toLocaleString("de-DE")),
-    miniStat("Games", ctx.catalog.games.length.toLocaleString("de-DE")),
-    miniStat("Demos", ctx.catalog.demos.length.toLocaleString("de-DE")),
+    miniStatNode("Tracks", values.tracks),
+    miniStatNode("Artists", values.artists),
+    miniStatNode("Games", values.games),
+    miniStatNode("Demos", values.demos),
   ]);
 }
 
 function renderLibraryPicker(ctx) {
   if (!ctx.native) return el("span", { hidden: true });
   const title = el("strong", {}, "HVSC Collection");
-  const sub = el("small", {}, ctx.native.state?.hvscRootLabel || "Keine HVSC gewaehlt");
+  const sub = el("small", {}, ctx.native.state?.hvscRootLabel || "No HVSC selected");
   const btn = el("button", {
     class: "native-library-card",
     onclick: async () => {
@@ -142,7 +165,7 @@ function renderLibraryPicker(ctx) {
         btn.disabled = true;
         await ctx.native.chooseHVSCRoot();
       } catch (error) {
-        ctx.toast.error(`HVSC konnte nicht geoeffnet werden: ${error.message || error}`);
+        ctx.toast.error(`Could not open HVSC: ${error.message || error}`);
       } finally {
         btn.disabled = false;
       }
@@ -153,7 +176,7 @@ function renderLibraryPicker(ctx) {
   ]);
   function paint(state = ctx.native.state) {
     btn.dataset.ready = state?.hvscRootValid ? "true" : "false";
-    sub.textContent = state?.hvscRootValid ? (state.hvscRootLabel || "C64Music") : "Ordner auswaehlen";
+    sub.textContent = state?.hvscRootValid ? (state.hvscRootLabel || "C64Music") : "Choose folder";
   }
   ctx.events.on("native.library.changed", paint);
   paint();
@@ -167,7 +190,7 @@ function renderFavoritePreview(ctx) {
     onclick: () => ctx.router?.navigate("favorites"),
   }, [
     el("span", { class: "favorite-preview__icon" }, [svg("heart", 18)]),
-    el("span", {}, [count, el("small", {}, "Lieblingslieder")]),
+    el("span", {}, [count, el("small", {}, "Favorites")]),
   ]);
   ctx.events.on("favorites.changed", () => {
     count.textContent = String(ctx.favorites.count());
@@ -178,6 +201,13 @@ function renderFavoritePreview(ctx) {
 function miniStat(label, value) {
   return el("div", { class: "sidebar-stat" }, [
     el("strong", {}, value),
+    el("span", {}, label),
+  ]);
+}
+
+function miniStatNode(label, valueNode) {
+  return el("div", { class: "sidebar-stat" }, [
+    valueNode,
     el("span", {}, label),
   ]);
 }

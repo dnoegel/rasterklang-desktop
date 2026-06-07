@@ -1,5 +1,5 @@
 import { clear, el, svg } from "./ui.js";
-import { formatDuration, playTrack } from "./catalog.js?v=2026-05-01-084125";
+import { currentTrack, formatDuration, playTrack } from "./catalog.js?v=2026-06-06-180836";
 
 const DEFAULT_PAGE_SIZE = 200;
 
@@ -45,20 +45,20 @@ export function cover(seed, label = "SID", size = 220) {
 export function entityCard({ title, subtitle, kind, seed, onclick }) {
   return el("button", { class: "entity-card", onclick }, [
     el("div", { class: "entity-card__art" }, [cover(seed || title, title)]),
-    el("strong", {}, title || "Unbenannt"),
+    el("strong", {}, title || "Untitled"),
     subtitle ? el("span", {}, subtitle) : null,
     kind ? el("small", {}, kind) : null,
   ]);
 }
 
-export function tuneTypeSelect(ctx, { value = "", onchange, allLabel = "Alle Typen" } = {}) {
+export function tuneTypeSelect(ctx, { value = "", onchange, allLabel = "All types" } = {}) {
   const select = el("select", {
     class: "search-select",
     onchange: (event) => onchange?.(event.target.value),
   }, [
     el("option", { value: "" }, allLabel),
     ...(ctx.catalog.tuneTypes || []).map((type) => (
-      el("option", { value: type.label }, `${type.label} (${type.count.toLocaleString("de-DE")})`)
+      el("option", { value: type.label }, `${type.label} (${type.count.toLocaleString("en-US")})`)
     )),
   ]);
   select.value = value || "";
@@ -85,18 +85,19 @@ export function trackTable(ctx, tracks, options = {}) {
     clear(wrap);
     wrap.append(el("div", { class: "track-row track-row--head" }, [
       el("span", {}, "#"),
-      el("span", {}, "Titel"),
-      el("span", {}, "Interpret"),
-      el("span", {}, "Typ"),
-      el("span", {}, "Zeit"),
+      el("span", {}, "Title"),
+      el("span", {}, "Artist"),
+      el("span", {}, "Type"),
+      el("span", {}, "Time"),
       el("span", {}, ""),
     ]));
 
     tracks.slice(0, visible).forEach((track, index) => {
       wrap.append(trackRow(ctx, track, index, queue));
     });
+    paintActiveRows();
     if (!tracks.length) {
-      wrap.append(el("div", { class: "empty-state" }, options.empty || "Keine Tracks."));
+      wrap.append(el("div", { class: "empty-state" }, options.empty || "No tracks."));
       return;
     }
     renderPager(footer, visible, tracks.length, loadMore);
@@ -104,8 +105,30 @@ export function trackTable(ctx, tracks, options = {}) {
   }
 
   render();
+  const offEvents = [
+    "player.track.started",
+    "engine.state",
+    "engine.play.started",
+    "engine.play.paused",
+    "engine.play.resumed",
+    "engine.play.stopped",
+  ].map((name) => ctx.events.on(name, paintActiveRows));
+  cleanupWhenDetached(wrap, () => offEvents.forEach((off) => off()));
   observer = attachInfinitePager(sentinel, loadMore, () => visible < tracks.length, options);
   return wrap;
+
+  function paintActiveRows() {
+    const snap = ctx.engine?.snapshot?.();
+    const activeTrack = snap?.playing || snap?.paused ? currentTrack(ctx) : null;
+    const activeId = activeTrack?.id || "";
+    for (const row of wrap.querySelectorAll(".track-row[data-track-id]")) {
+      const active = activeId && row.dataset.trackId === activeId;
+      row.dataset.current = active ? "true" : "false";
+      row.dataset.playing = active && snap?.playing && !snap?.paused ? "true" : "false";
+      if (active) row.setAttribute("aria-current", "true");
+      else row.removeAttribute("aria-current");
+    }
+  }
 }
 
 export function pagedGrid(items, renderItem, options = {}) {
@@ -127,7 +150,7 @@ export function pagedGrid(items, renderItem, options = {}) {
   function render() {
     clear(wrap);
     if (!items.length) {
-      wrap.append(el("div", { class: "empty-state" }, options.empty || "Keine Treffer."));
+      wrap.append(el("div", { class: "empty-state" }, options.empty || "No results."));
       return;
     }
     clear(grid);
@@ -147,7 +170,7 @@ export function pagedGrid(items, renderItem, options = {}) {
 export function trackRow(ctx, track, index = 0, queue = null) {
   const fav = el("button", {
     class: "icon-btn",
-    title: "Favorit",
+    title: "Favorite",
     onclick: (event) => {
       event.stopPropagation();
       const active = ctx.favorites.toggle(track.id);
@@ -159,19 +182,25 @@ export function trackRow(ctx, track, index = 0, queue = null) {
     fav.dataset.active = ctx.favorites.has(track.id) ? "true" : "false";
   });
 
+  const indexCell = el("span", { class: "track-row__index" }, [
+    el("span", { class: "track-row__number" }, String(index + 1)),
+    el("span", { class: "track-row__now" }, [svg("play", 12)]),
+  ]);
+
   return el("button", {
     class: "track-row",
+    dataset: { trackId: track.id },
     onclick: () => playTrack(ctx, track, queue || [track]),
   }, [
-    el("span", { class: "track-row__index" }, String(index + 1)),
+    indexCell,
     el("span", { class: "track-row__title" }, [
-      el("strong", {}, track.title || "Unbenannt"),
+      el("strong", {}, track.title || "Untitled"),
       el("small", {}, track.author || track.hvscPath),
     ]),
     el("span", {}, track.artist || "Unknown"),
     el("span", { class: "track-row__info" }, [
       el("strong", {}, tuneTypeSummary(track)),
-      el("small", {}, track.released || track.hvscPath || "-"),
+      el("small", {}, track.source || track.released || track.hvscPath || "-"),
     ]),
     el("span", {}, formatDuration(track)),
     el("span", { class: "track-row__actions" }, [fav]),
@@ -188,7 +217,7 @@ export function pill(label, value) {
 export function typeLabel(type) {
   if (type === "game") return "Game";
   if (type === "demo") return "Demo";
-  return "Interpret";
+  return "Artist";
 }
 
 export function tuneTypeSummary(track) {
@@ -202,8 +231,8 @@ function renderPager(host, visible, total, loadMore) {
   clear(host);
   if (visible >= total) return;
   host.append(
-    el("span", { class: "list-more__status" }, `${visible.toLocaleString("de-DE")} von ${total.toLocaleString("de-DE")} sichtbar`),
-    el("button", { class: "btn btn--ghost", onclick: loadMore }, [svg("chevron", 14), "Mehr laden"]),
+    el("span", { class: "list-more__status" }, `${visible.toLocaleString("en-US")} of ${total.toLocaleString("en-US")} visible`),
+    el("button", { class: "btn btn--ghost", onclick: loadMore }, [svg("chevron", 14), "Load more"]),
   );
 }
 
@@ -238,6 +267,18 @@ function attachInfinitePager(sentinel, loadMore, hasMore, options) {
     observer.observe(sentinel);
   });
   return controller;
+}
+
+function cleanupWhenDetached(node, cleanup) {
+  if (typeof MutationObserver === "undefined" || typeof document === "undefined" || !document.body) return;
+  let done = false;
+  const observer = new MutationObserver(() => {
+    if (done || node.isConnected) return;
+    done = true;
+    observer.disconnect();
+    cleanup();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 function hash(s) {

@@ -1,11 +1,12 @@
-// Loads the zmk-web SDK with cache-busting and falls back gracefully
+// Loads the rasterklang-wasm SDK with cache-busting and falls back gracefully
 // to a minimal "demo" mode if the WASM bundle is not present.
 
 const CANDIDATES = [
-  { js: "../zmk-web/dist/zmk-sid.js", wasmExec: "../zmk-web/dist/wasm_exec.js", wasm: "../zmk-web/dist/zmk-web-player.wasm" },
-  { js: "../zmk-web/src/zmk-sid.js",  wasmExec: "../zmk-web/dist/wasm_exec.js", wasm: "../zmk-web/dist/zmk-web-player.wasm" },
+  { js: "/rasterklang-wasm/dist/rasterklang.js", wasmExec: "/rasterklang-wasm/dist/wasm_exec.js", wasm: "/rasterklang-wasm/dist/rasterklang.wasm" },
+  { js: "../rasterklang-wasm/dist/rasterklang.js", wasmExec: "../rasterklang-wasm/dist/wasm_exec.js", wasm: "../rasterklang-wasm/dist/rasterklang.wasm" },
+  { js: "../rasterklang-wasm/src/rasterklang.js",  wasmExec: "../rasterklang-wasm/dist/wasm_exec.js", wasm: "../rasterklang-wasm/dist/rasterklang.wasm" },
 ];
-const SDK_ASSET_VERSION = "2026-04-27-21";
+const SDK_ASSET_VERSION = "2026-05-01-7";
 
 let cached;
 
@@ -16,15 +17,15 @@ export async function loadSdk() {
     for (const candidate of CANDIDATES) {
       try {
         const mod = await import(versionedURL(candidate.js));
-        if (typeof mod.createZmkSid !== "function") continue;
-        const sid = await mod.createZmkSid({
+        if (typeof mod.createRasterklang !== "function") continue;
+        const sid = await mod.createRasterklang({
           wasmExecURL: versionedURL(candidate.wasmExec),
           wasmURL: versionedURL(candidate.wasm),
         });
         return {
           ok: true,
           sid,
-          ZmkSidError: mod.ZmkSidError,
+          RasterklangError: mod.RasterklangError,
           int16ToFloat32: mod.int16ToFloat32,
           path: candidate.js,
         };

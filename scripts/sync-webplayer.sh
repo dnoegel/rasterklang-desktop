@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-WEBPLAYER_DIR="${WEBPLAYER_DIR:-"$ROOT_DIR/../zmk-webplayer"}"
+WEBPLAYER_DIR="${WEBPLAYER_DIR:-"$ROOT_DIR/../rasterklang-webplayer"}"
 DIST_DIR="$ROOT_DIR/frontend/dist"
 OVERLAY_DIR="$ROOT_DIR/frontend/overrides"
 VERSION="${ASSET_VERSION:-$(date -u +%Y-%m-%d-%H%M%S)}"
@@ -13,20 +13,17 @@ if [[ ! -d "$WEBPLAYER_DIR/src" ]]; then
   exit 1
 fi
 
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/zmk-nativeplayer-sync.XXXXXX")"
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/rasterklang-desktop-sync.XXXXXX")"
 STAGE_DIR="$TMP_DIR/dist"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 mkdir -p "$STAGE_DIR"
 
-for entry in "$WEBPLAYER_DIR"/*; do
-  name="$(basename "$entry")"
-  case "$name" in
-    Makefile|README.md|package.json|package-lock.json|scripts)
-      continue
-      ;;
-  esac
-  cp -R "$entry" "$STAGE_DIR/"
+for name in app.js index.html styles.css assets src; do
+  entry="$WEBPLAYER_DIR/$name"
+  if [[ -e "$entry" ]]; then
+    cp -R "$entry" "$STAGE_DIR/"
+  fi
 done
 
 if [[ -d "$OVERLAY_DIR" ]]; then
@@ -44,4 +41,4 @@ rm -rf "$DIST_DIR"
 mkdir -p "$(dirname "$DIST_DIR")"
 mv "$STAGE_DIR" "$DIST_DIR"
 
-echo "Synced zmk-webplayer into zmk-nativeplayer frontend/dist (asset version: $VERSION)"
+echo "Synced rasterklang-webplayer into rasterklang-desktop frontend/dist (asset version: $VERSION)"

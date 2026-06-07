@@ -1,13 +1,13 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=2026-05-01-084125";
+import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=2026-06-06-180836";
 
 export function mount(host, ctx) {
   mountTypeBrowser(host, ctx, {
     title: "Games",
-    subtitle: "C64-Spiele aus der HVSC als direkt abspielbare SID-Dateien",
-    placeholder: "Game suchen",
+    subtitle: "C64 games from the HVSC as directly playable SID files",
+    placeholder: "Search games",
     tracks: ctx.catalog.games,
-    empty: "Keine Games gefunden.",
+    empty: "No games found.",
   });
 }
 

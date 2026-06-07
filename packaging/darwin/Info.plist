@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>rasterklang</string>
+	<string>rasterklang-desktop</string>
 	<key>CFBundleIconFile</key>
 	<string>iconfile</string>
 	<key>CFBundleIdentifier</key>

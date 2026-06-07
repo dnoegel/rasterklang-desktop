@@ -1,7 +1,7 @@
 WAILS_TAGS ?= desktop,production
 APP_NAME ?= Rasterklang
-BINARY_NAME ?= rasterklang
-INSTALL_BINARY_NAME ?= rasterklang
+BINARY_NAME ?= rasterklang-desktop
+INSTALL_BINARY_NAME ?= rasterklang-desktop
 PREFIX ?= /usr/local
 DESTDIR ?=
 INSTALL_APP_DIR ?= /Applications

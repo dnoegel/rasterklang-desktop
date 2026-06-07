@@ -256,14 +256,14 @@ func resolveManifest(manifestPath string) (string, error) {
 		return absExisting(manifestPath, "manifest")
 	}
 	candidates := []string{
-		"../zmk-webplayer/assets/hvsc-library.json",
-		"zmk-webplayer/assets/hvsc-library.json",
+		"../rasterklang-webplayer/assets/hvsc-library.json",
+		"rasterklang-webplayer/assets/hvsc-library.json",
 		"./assets/hvsc-library.json",
 	}
 	if exe, err := os.Executable(); err == nil {
 		dir := filepath.Dir(exe)
 		candidates = append(candidates,
-			filepath.Join(dir, "../zmk-webplayer/assets/hvsc-library.json"),
+			filepath.Join(dir, "../rasterklang-webplayer/assets/hvsc-library.json"),
 			filepath.Join(dir, "assets/hvsc-library.json"),
 		)
 	}

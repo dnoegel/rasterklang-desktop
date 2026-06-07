@@ -1,20 +1,20 @@
 import { el, svg } from "../lib/ui.js";
-import { playTrack } from "../lib/catalog.js?v=2026-05-01-084125";
-import { entityCard, sectionHead, trackTable, typeLabel } from "../lib/view-components.js?v=2026-05-01-084125";
+import { playTrack } from "../lib/catalog.js?v=2026-06-06-180836";
+import { entityCard, sectionHead, trackTable, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
 
 export function mount(host, ctx) {
   const classics = ctx.catalog.featuredTracks;
   host.append(hero(ctx, classics));
 
-  host.append(sectionHead("HVSC Picks", "Direkt abspielbare Klassiker aus der lokalen Sammlung"));
+  host.append(sectionHead("HVSC Picks", "Directly playable classics from the local collection"));
   host.append(trackTable(ctx, classics, { limit: 18, queue: classics }));
 
-  host.append(sectionHead("Interpreten", "Komponisten und Crews mit grossem HVSC-Katalog"));
+  host.append(sectionHead("Artists", "Composers and crews with large HVSC catalogs"));
   const artistGrid = el("div", { class: "entity-grid" });
   for (const artist of ctx.catalog.topArtists.slice(0, 18)) {
     artistGrid.append(entityCard({
       title: artist.name,
-      subtitle: `${artist.trackCount.toLocaleString("de-DE")} Tracks`,
+      subtitle: `${artist.trackCount.toLocaleString("en-US")} Tracks`,
       kind: typeLabel(artist.type),
       seed: artist.id,
       onclick: () => ctx.router.navigate("artist", { id: artist.id }),
@@ -22,12 +22,12 @@ export function mount(host, ctx) {
   }
   host.append(artistGrid);
 
-  host.append(sectionHead("Games", "Spiele als eigene Profile"));
+  host.append(sectionHead("Games", "Games as first-class profiles"));
   const gameGrid = el("div", { class: "entity-grid" });
   for (const artist of ctx.catalog.topGames.slice(0, 12)) {
     gameGrid.append(entityCard({
       title: artist.name,
-      subtitle: `${artist.trackCount.toLocaleString("de-DE")} Tracks`,
+      subtitle: `${artist.trackCount.toLocaleString("en-US")} Tracks`,
       kind: "Game",
       seed: artist.id,
       onclick: () => ctx.router.navigate("artist", { id: artist.id }),
@@ -38,21 +38,21 @@ export function mount(host, ctx) {
 
 function hero(ctx, classics) {
   const first = classics[0];
-  const brandName = ctx.brandName || "zmk-webplayer";
+  const brandName = ctx.brandName || "Rasterklang";
   return el("section", { class: "web-hero" }, [
     el("div", { class: "web-hero__copy" }, [
       el("p", { class: "kicker" }, "High Voltage SID Collection"),
       el("h1", {}, brandName),
-      el("p", {}, "Die lokale HVSC als Player-Bibliothek mit Suche, Interpreten, Games, Demos, Favoriten und Live-Insight."),
+      el("p", {}, "Your local HVSC as a player library with search, artists, games, demos, favorites, and live Insight."),
       el("div", { class: "hero-actions" }, [
-        el("button", { class: "btn btn--accent", onclick: () => first && playTrack(ctx, first, classics) }, [svg("play", 16), "Abspielen"]),
-        el("button", { class: "btn btn--ghost", onclick: () => ctx.router.navigate("search") }, [svg("search", 16), "Suchen"]),
+        el("button", { class: "btn btn--accent", onclick: () => first && playTrack(ctx, first, classics) }, [svg("play", 16), "Play"]),
+        el("button", { class: "btn btn--ghost", onclick: () => ctx.router.navigate("search") }, [svg("search", 16), "Search"]),
       ]),
     ]),
     el("div", { class: "hero-metrics" }, [
-      metric("Tracks", ctx.library.trackCount.toLocaleString("de-DE")),
-      metric("Interpreten", ctx.catalog.artists.filter((artist) => artist.type === "artist").length.toLocaleString("de-DE")),
-      metric("Games", ctx.catalog.games.length.toLocaleString("de-DE")),
+      metric("Tracks", ctx.library.trackCount.toLocaleString("en-US")),
+      metric("Artists", ctx.catalog.artists.filter((artist) => artist.type === "artist").length.toLocaleString("en-US")),
+      metric("Games", ctx.catalog.games.length.toLocaleString("en-US")),
     ]),
   ]);
 }
