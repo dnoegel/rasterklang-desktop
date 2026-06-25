@@ -314,7 +314,8 @@ webplayer artifact. Desktop checks these fields before release:
 
 Desktop release preflight also checks `webplayer.lock` itself: `status` must be
 `released`, `artifact.url` must point at the published GitHub Release tarball,
-and `artifact.checksumSha256` must contain the exact release asset SHA-256.
+the release tag and archive name inside `artifact.url` must match
+`webplayer.lock.version`, and `artifact.checksumSha256` must contain the exact release asset SHA-256.
 
 ### Bridge Compatibility Rule
 

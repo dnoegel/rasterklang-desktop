@@ -45,6 +45,26 @@ try {
     },
     "artifact.checksumRequiredForRelease must be true",
   );
+  expectFailure(
+    {
+      ...releasedLock(),
+      artifact: {
+        ...releasedLock().artifact,
+        url: "https://github.com/dnoegel/rasterklang-webplayer/releases/download/v0.1.1/rasterklang-webplayer-ui-v0.1.0.tar.gz",
+      },
+    },
+    "artifact.url release tag and archive name must match webplayer.lock version",
+  );
+  expectFailure(
+    {
+      ...releasedLock(),
+      artifact: {
+        ...releasedLock().artifact,
+        url: "https://github.com/dnoegel/rasterklang-webplayer/releases/download/v0.1.0/rasterklang-webplayer-ui-v0.1.1.tar.gz",
+      },
+    },
+    "artifact.url release tag and archive name must match webplayer.lock version",
+  );
 } finally {
   rmSync(tmpDir, { recursive: true, force: true });
 }

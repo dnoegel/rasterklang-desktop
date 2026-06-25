@@ -4,7 +4,7 @@ const lockPath = process.argv[2] ?? "webplayer.lock";
 const expectedPackage = "rasterklang-webplayer-ui";
 const expectedRepo = "rasterklang-webplayer";
 const releaseAssetPattern =
-  /^https:\/\/github\.com\/dnoegel\/rasterklang-webplayer\/releases\/download\/[^/]+\/rasterklang-webplayer-ui-[^/]+\.tar\.gz$/;
+  /^https:\/\/github\.com\/dnoegel\/rasterklang-webplayer\/releases\/download\/([^/]+)\/rasterklang-webplayer-ui-([^/]+)\.tar\.gz$/;
 
 let lock;
 try {
@@ -48,8 +48,14 @@ if (!lock.artifact || typeof lock.artifact !== "object") {
     errors.push("artifact.checksumSha256 must be a 64-character lowercase SHA-256");
   }
 
-  if (!releaseAssetPattern.test(lock.artifact.url ?? "")) {
+  const releaseAssetMatch = (lock.artifact.url ?? "").match(releaseAssetPattern);
+  if (!releaseAssetMatch) {
     errors.push("artifact.url must point at the rasterklang-webplayer GitHub release asset");
+  } else {
+    const [, releaseTag, archiveVersion] = releaseAssetMatch;
+    if (releaseTag !== lock.version || archiveVersion !== lock.version) {
+      errors.push("artifact.url release tag and archive name must match webplayer.lock version");
+    }
   }
 
   if (lock.artifact.filePattern !== "rasterklang-webplayer-ui-{version}.tar.gz") {
