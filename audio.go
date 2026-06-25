@@ -110,16 +110,26 @@ func (e *AudioEngine) PlayTrack(track *Track, path string, subtune int, startAt 
 	if track == nil {
 		return fmt.Errorf("no track selected")
 	}
-	e.controlMu.Lock()
-	defer e.controlMu.Unlock()
-
-	e.stop()
-
 	tune, err := sid.LoadFile(path)
 	if err != nil {
 		e.setError(err)
 		return err
 	}
+	return e.PlayTune(track, tune, path, subtune, startAt)
+}
+
+func (e *AudioEngine) PlayTune(track *Track, tune *sid.Tune, sourceLabel string, subtune int, startAt float64) error {
+	if track == nil {
+		return fmt.Errorf("no track selected")
+	}
+	if tune == nil {
+		return fmt.Errorf("no tune loaded")
+	}
+	e.controlMu.Lock()
+	defer e.controlMu.Unlock()
+
+	e.stop()
+
 	if subtune <= 0 {
 		subtune = track.DefaultSubtune
 	}
@@ -162,7 +172,7 @@ func (e *AudioEngine) PlayTrack(track *Track, path string, subtune int, startAt 
 	e.player = player
 	e.reader = reader
 	e.current = track
-	e.currentPath = path
+	e.currentPath = sourceLabel
 	e.subtune = subtune
 	e.playing = true
 	e.paused = false

@@ -55,15 +55,16 @@ The desktop app is a native HVSC/library player first. It shares the webplayer
 UI, but not every browser/WASM workflow is implemented through the Wails bridge
 yet:
 
-- browser-local `.sid` upload playback is not wired into the native bridge. Use
-  the configured local HVSC folder for desktop playback.
+- browser-local `.sid` upload playback is wired into the native bridge. Uploaded
+  bytes are parsed locally, kept in memory, and played through the native Go
+  audio engine without requiring an HVSC root.
 - Instruction stepping is still WASM/debugger-only. The native bridge can expose
   playback snapshots from the Go engine, but it does not yet provide a step
   instruction API for the shared Insight/lesson tools.
 - debug bridge parity is incomplete. Native playback state, local snapshots,
   scope samples, audio controls, and equalizer state are available; trace
-  streams, instruction stepping, and upload-byte playback still need explicit
-  desktop bridge methods before they can be advertised as desktop features.
+  streams and instruction stepping still need explicit desktop bridge methods
+  before they can be advertised as desktop features.
 
 ## Build
 
@@ -275,8 +276,8 @@ The desktop override boundary is intentionally small:
 - `frontend/overrides/app.js` may replace bootstrapping, Wails startup, local
   HVSC root selection, and wiring of native services into the shared shell.
 - `frontend/overrides/src/lib/native-engine.js` may replace browser audio with
-  Wails-backed playback, native equalizer/audio controls, local snapshots, and
-  playback-state polling.
+  Wails-backed playback, native upload-byte loading, native equalizer/audio
+  controls, local snapshots, and playback-state polling.
 - `frontend/overrides/src/lib/native-favorites.js` may replace browser
   `localStorage` favorites with native config-directory persistence and legacy
   migration.

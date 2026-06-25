@@ -20,6 +20,7 @@ type App struct {
 	mu      sync.RWMutex
 	catalog *Catalog
 	pending *Track
+	upload  *uploadedTune
 	config  appConfig
 
 	configPath string
@@ -101,6 +102,13 @@ type PlaybackState struct {
 	Scope          []int16            `json:"scope,omitempty"`
 	Spectrum       []int16            `json:"spectrum,omitempty"`
 }
+
+type uploadedTune struct {
+	Track *Track
+	Tune  *sid.Tune
+}
+
+const uploadedTrackID = "upload:current"
 
 func NewApp(manifest []byte) (*App, error) {
 	configPath := defaultConfigPath()
@@ -202,6 +210,26 @@ func (a *App) LoadTrack(trackID string) (*PlaybackState, error) {
 	return a.playbackState(true), nil
 }
 
+func (a *App) LoadUploadedTune(label string, data []byte) (*PlaybackState, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("SID upload is empty")
+	}
+	tune, err := sid.Parse(data)
+	if err != nil {
+		return nil, err
+	}
+	track := trackFromUploadedTune(label, tune)
+	a.engine.Stop()
+	a.mu.Lock()
+	a.upload = &uploadedTune{
+		Track: track,
+		Tune:  tune,
+	}
+	a.pending = track
+	a.mu.Unlock()
+	return a.playbackState(true), nil
+}
+
 func (a *App) PlayTrack(trackID string, subtune int, startAt float64) (*PlaybackState, error) {
 	track, err := a.resolvePlayableTrack(trackID)
 	if err != nil {
@@ -217,6 +245,22 @@ func (a *App) PlayTrack(trackID string, subtune int, startAt float64) (*Playback
 	}
 	a.mu.Lock()
 	a.pending = track
+	a.mu.Unlock()
+	return a.playbackState(true), nil
+}
+
+func (a *App) PlayUploadedTune(subtune int, startAt float64) (*PlaybackState, error) {
+	a.mu.RLock()
+	upload := a.upload
+	a.mu.RUnlock()
+	if upload == nil || upload.Track == nil || upload.Tune == nil {
+		return nil, fmt.Errorf("kein Upload geladen")
+	}
+	if err := a.engine.PlayTune(upload.Track, upload.Tune, upload.Track.File, subtune, startAt); err != nil {
+		return a.playbackState(false), err
+	}
+	a.mu.Lock()
+	a.pending = upload.Track
 	a.mu.Unlock()
 	return a.playbackState(true), nil
 }
@@ -238,13 +282,25 @@ func (a *App) Seek(seconds float64) (*PlaybackState, error) {
 	if snap.Track == nil {
 		return a.playbackState(false), fmt.Errorf("kein Track geladen")
 	}
-	path, err := a.trackPath(snap.Track)
-	if err != nil {
-		return nil, err
-	}
 	wasPaused := snap.Paused || !snap.Playing
-	if err := a.engine.PlayTrack(snap.Track, path, snap.Subtune, seconds); err != nil {
-		return a.playbackState(false), err
+	if snap.Track.ID == uploadedTrackID {
+		a.mu.RLock()
+		upload := a.upload
+		a.mu.RUnlock()
+		if upload == nil || upload.Tune == nil {
+			return nil, fmt.Errorf("kein Upload geladen")
+		}
+		if err := a.engine.PlayTune(upload.Track, upload.Tune, upload.Track.File, snap.Subtune, seconds); err != nil {
+			return a.playbackState(false), err
+		}
+	} else {
+		path, err := a.trackPath(snap.Track)
+		if err != nil {
+			return nil, err
+		}
+		if err := a.engine.PlayTrack(snap.Track, path, snap.Subtune, seconds); err != nil {
+			return a.playbackState(false), err
+		}
 	}
 	if wasPaused {
 		a.engine.TogglePlay()
@@ -519,7 +575,7 @@ func tuneFromTrack(track *Track, subtune int) *NativeTune {
 		},
 		Supported: true,
 		Source: NativeSource{
-			Kind:      "hvsc",
+			Kind:      sourceKindForTrack(track),
 			File:      track.File,
 			Label:     track.Title,
 			TrackID:   track.ID,
@@ -528,6 +584,34 @@ func tuneFromTrack(track *Track, subtune int) *NativeTune {
 			Duration:  durationForSubtune(track, subtune),
 		},
 	}
+}
+
+func trackFromUploadedTune(label string, tune *sid.Tune) *Track {
+	label = strings.TrimSpace(label)
+	if label == "" {
+		label = "Upload.sid"
+	}
+	title := strings.TrimSpace(tune.Title)
+	if title == "" {
+		title = strings.TrimSuffix(filepath.Base(label), filepath.Ext(label))
+	}
+	return &Track{
+		ID:             uploadedTrackID,
+		File:           filepath.Base(label),
+		Title:          title,
+		Author:         tune.Author,
+		Subtunes:       int(tune.Songs),
+		DefaultSubtune: int(tune.StartSong),
+		Clock:          string(tune.Clock),
+		Model:          string(tune.SIDModel),
+	}
+}
+
+func sourceKindForTrack(track *Track) string {
+	if track != nil && track.ID == uploadedTrackID {
+		return "upload"
+	}
+	return "hvsc"
 }
 
 func durationForSubtune(track *Track, subtune int) float64 {

@@ -1,6 +1,8 @@
 import {
   GetPlaybackState,
+  LoadUploadedTune,
   LoadTrack,
+  PlayUploadedTune,
   PlayTrack,
   ResetEqualizer,
   Seek,
@@ -42,6 +44,7 @@ export function createNativeEngineController({ events, toast }) {
     equalizer: { ...DEFAULT_EQUALIZER },
     audioControls: { ...DEFAULT_CONTROLS },
     lastSnapshot: null,
+    currentTuneBytes: null,
     currentTrackId: "",
     pollTimer: 0,
     pollBusy: false,
@@ -87,6 +90,7 @@ export function createNativeEngineController({ events, toast }) {
   async function loadFromUrl(_url, source = {}) {
     if (!source.trackId) throw new Error("Track-ID fehlt.");
     state.currentTrackId = source.trackId;
+    state.currentTuneBytes = null;
     state.tune = tuneFromSource(source, state.currentSubtune);
     const next = await LoadTrack(source.trackId);
     applyBackendState(next, { emitSnapshot: false });
@@ -95,14 +99,24 @@ export function createNativeEngineController({ events, toast }) {
     return state.tune;
   }
 
-  async function loadFromBytes() {
-    throw new Error("Uploads sind in der nativen App noch nicht verdrahtet.");
+  async function loadFromBytes(bytes, source = {}) {
+    const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
+    const label = source.label || source.file || "Upload.sid";
+    const next = await LoadUploadedTune(label, Array.from(data));
+    state.currentTuneBytes = new Uint8Array(data);
+    applyBackendState(next, { emitSnapshot: false });
+    events.emit("engine.tune.loaded", { metadata: state.tune?.metadata, source: state.tune?.source || source });
+    emitState();
+    return state.tune;
   }
 
   async function play({ subtune, startAt = 0, paused = false } = {}) {
     const trackId = state.currentTrackId || state.tune?.source?.trackId;
-    if (!trackId) throw new Error("Lade zuerst einen Track.");
-    const next = await PlayTrack(trackId, subtune || state.currentSubtune || 1, startAt || 0);
+    const isUpload = state.tune?.source?.kind === "upload";
+    if (!isUpload && !trackId) throw new Error("Lade zuerst einen Track.");
+    const next = isUpload
+      ? await PlayUploadedTune(subtune || state.currentSubtune || 1, startAt || 0)
+      : await PlayTrack(trackId, subtune || state.currentSubtune || 1, startAt || 0);
     applyBackendState(next, { emitSnapshot: true });
     if (paused && state.playing && !state.paused) {
       await pause();
@@ -116,6 +130,7 @@ export function createNativeEngineController({ events, toast }) {
   async function playLibraryTrack(track, { subtune, startAt = 0 } = {}) {
     if (!track?.id) throw new Error("Track-ID fehlt.");
     state.currentTrackId = track.id;
+    state.currentTuneBytes = null;
     state.currentSubtune = Number(subtune || track.defaultSubtune || 1);
     state.tune = tuneFromTrack(track, state.currentSubtune);
     events.emit("engine.tune.loaded", { metadata: state.tune.metadata, source: state.tune.source });
@@ -297,7 +312,7 @@ export function createNativeEngineController({ events, toast }) {
     getAudioControls: () => ({ ...state.audioControls, filterEnabled: !state.audioControls.filterBypass }),
     getCapabilities: nativeCapabilities,
     getCurrentTune: () => state.tune,
-    getCurrentTuneBytes: () => null,
+    getCurrentTuneBytes: () => state.currentTuneBytes,
     getLastSnapshot: () => state.lastSnapshot,
     getError: () => state.error,
     setSubtune: (n) => {

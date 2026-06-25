@@ -13,6 +13,9 @@ public tag is created. The project follows semantic version-style tags such as
 - Added `webplayer.lock` as the desktop/webplayer contract record.
 - Added frontend contract checks for embedded webplayer metadata, required Wails
   bridge capabilities, desktop override boundaries, and bridge API versioning.
+- Added native browser-local `.sid` upload playback through the Wails bridge;
+  uploaded bytes are parsed locally and played by the Go audio engine without an
+  HVSC root.
 - Added artifact sync tests for local archive sync and sibling-checkout fallback.
 - Added `make check` as the local and CI release gate for formatting, shell
   syntax, webplayer sync, frontend contract checks, release workflow checks, Go

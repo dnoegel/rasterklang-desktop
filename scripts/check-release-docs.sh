@@ -70,7 +70,8 @@ require_text README.md "Unsupported Tune Behavior"
 require_text README.md "Unsupported RSID/BASIC/ROM edge cases"
 require_text README.md "C64 ROM images"
 require_text README.md "Native Feature Gaps"
-require_text README.md 'browser-local `.sid` upload playback'
+require_text README.md 'browser-local `.sid` upload playback is wired into the native bridge'
+require_text README.md "native upload-byte loading"
 require_text README.md "instruction stepping"
 require_text README.md "debug bridge parity"
 

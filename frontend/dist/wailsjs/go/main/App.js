@@ -36,8 +36,16 @@ export function LoadTrack(trackId) {
   return app().LoadTrack(trackId);
 }
 
+export function LoadUploadedTune(label, data) {
+  return app().LoadUploadedTune(label, data);
+}
+
 export function PlayTrack(trackId, subtune, startAt) {
   return app().PlayTrack(trackId, subtune, startAt);
+}
+
+export function PlayUploadedTune(subtune, startAt) {
+  return app().PlayUploadedTune(subtune, startAt);
 }
 
 export function ResetEqualizer() {
