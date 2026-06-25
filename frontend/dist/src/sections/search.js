@@ -26,7 +26,7 @@ export function mount(host, ctx, params = {}) {
     clear(resultHost);
     if (!q && !tuneType) {
       resultHost.append(sectionHead("Search", "Enter a search term; Enter is not required."));
-      resultHost.append(el("div", { class: "empty-state" }, "Ready for HVSC search."));
+      resultHost.append(el("div", { class: "empty-state" }, "Ready for local SID search."));
       return;
     }
     const results = ctx.catalog.search(q, q ? 400 : ctx.catalog.tracks.length, { tuneType });

@@ -19,7 +19,7 @@ export function mount(host, ctx) {
     },
   });
   const gridHost = el("div", {});
-  host.append(sectionHead("Releases", "HVSC files as releases"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
+  host.append(sectionHead("Releases", "SID files grouped as releases"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
 
   function render() {
     clear(gridHost);

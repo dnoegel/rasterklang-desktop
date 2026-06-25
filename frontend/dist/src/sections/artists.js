@@ -19,7 +19,7 @@ export function mount(host, ctx) {
     },
   });
   const gridHost = el("div", {});
-  host.append(sectionHead("Artists", "Composers and crews from the HVSC"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
+  host.append(sectionHead("Artists", "Composers and crews from the local SID library"), el("section", { class: "search-panel" }, [input, typeSelect]), gridHost);
 
   function render() {
     clear(gridHost);

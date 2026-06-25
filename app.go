@@ -172,7 +172,7 @@ func (a *App) ChooseHVSCRoot() (*LibraryState, error) {
 		return nil, fmt.Errorf("app context is not ready")
 	}
 	selection, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-		Title:                "HVSC Collection oder C64Music Ordner auswaehlen",
+		Title:                "SID-Ordner oder C64Music auswaehlen",
 		CanCreateDirectories: false,
 	})
 	if err != nil {
@@ -439,7 +439,7 @@ func (a *App) trackPath(track *Track) (string, error) {
 	root := catalog.HVSCRoot
 	a.mu.RUnlock()
 	if root == "" {
-		return "", fmt.Errorf("Bitte zuerst die lokale HVSC Collection auswaehlen.")
+		return "", fmt.Errorf("Bitte zuerst einen lokalen SID-Ordner auswaehlen.")
 	}
 	path := catalog.TrackPath(track)
 	if _, err := os.Stat(path); err != nil {
@@ -522,7 +522,7 @@ func normalizeHVSCRoot(path string) (string, error) {
 			return candidate, nil
 		}
 	}
-	return "", fmt.Errorf("%q sieht nicht wie eine HVSC Collection aus. Waehle den Ordner C64Music oder den Ordner, der C64Music enthaelt.", abs)
+	return "", fmt.Errorf("%q sieht nicht wie ein SID-Ordner aus. Waehle den Ordner C64Music oder den Ordner, der C64Music enthaelt.", abs)
 }
 
 func isHVSCRoot(path string) bool {

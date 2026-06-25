@@ -6,10 +6,10 @@ export function mount(host, ctx) {
   const classics = ctx.catalog.featuredTracks;
   host.append(hero(ctx, classics));
 
-  host.append(sectionHead("HVSC Picks", "Directly playable classics from the local collection"));
+  host.append(sectionHead("Library Picks", "Directly playable classics from the local SID collection"));
   host.append(trackTable(ctx, classics, { limit: 18, queue: classics }));
 
-  host.append(sectionHead("Artists", "Composers and crews with large HVSC catalogs"));
+  host.append(sectionHead("Artists", "Composers and crews with large local SID catalogs"));
   const artistGrid = el("div", { class: "entity-grid" });
   for (const artist of ctx.catalog.topArtists.slice(0, 18)) {
     artistGrid.append(entityCard({
@@ -41,9 +41,9 @@ function hero(ctx, classics) {
   const brandName = ctx.brandName || "Rasterklang";
   return el("section", { class: "web-hero" }, [
     el("div", { class: "web-hero__copy" }, [
-      el("p", { class: "kicker" }, "High Voltage SID Collection"),
+      el("p", { class: "kicker" }, "Local SID collection"),
       el("h1", {}, brandName),
-      el("p", {}, "Your local HVSC as a player library with search, artists, games, demos, favorites, and live Insight."),
+      el("p", {}, "Your local SID folder as a player library with search, artists, games, demos, favorites, and live Insight."),
       el("div", { class: "hero-actions" }, [
         el("button", { class: "btn btn--accent", onclick: () => first && playTrack(ctx, first, classics) }, [svg("play", 16), "Play"]),
         el("button", { class: "btn btn--ghost", onclick: () => ctx.router.navigate("search") }, [svg("search", 16), "Search"]),

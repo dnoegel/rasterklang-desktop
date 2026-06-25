@@ -25,9 +25,10 @@ make run
 `make run` syncs the bundled web UI, generates the app icon, and starts the app
 with the Wails tags `desktop,production`.
 
-On first launch, use the `HVSC Collection` button in the sidebar and select
-your local `C64Music` folder, or a parent folder that contains `C64Music`. The
-selection is stored in the platform user config directory.
+On first launch, use the `SID Collection` button in the sidebar and select your
+local SID folder. HVSC-style `C64Music` folders are recognized automatically,
+including parent folders that contain `C64Music`. The selection is stored in the
+platform user config directory.
 
 Favorites are stored as track IDs in `favorites.json` next to `config.json` in
 the platform user config directory. On macOS this is usually

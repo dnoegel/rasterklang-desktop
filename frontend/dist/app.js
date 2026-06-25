@@ -19,7 +19,7 @@ async function boot() {
   const engine = createNativeEngineController({ events, toast });
 
   const response = await fetch(`./assets/hvsc-library.json?v=${APP_VERSION}`, { cache: "force-cache" });
-  if (!response.ok) throw new Error(`HVSC Manifest konnte nicht geladen werden (${response.status}).`);
+  if (!response.ok) throw new Error(`Bibliotheksmanifest konnte nicht geladen werden (${response.status}).`);
   const library = await response.json();
   const catalog = createCatalog(library);
   const nativeState = await GetLibraryState();
@@ -52,7 +52,7 @@ async function boot() {
   document.getElementById("app").removeAttribute("data-loading");
 
   if (!nativeState?.hvscRootValid) {
-    toast.warn("Bitte lokale HVSC Collection auswaehlen.", 5200);
+    toast.warn("Bitte lokalen SID-Ordner auswaehlen.", 5200);
   }
 }
 

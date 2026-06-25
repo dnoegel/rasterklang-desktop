@@ -4,7 +4,7 @@ import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.
 export function mount(host, ctx) {
   mountTypeBrowser(host, ctx, {
     title: "Demos",
-    subtitle: "Demos, intros, and tools from the HVSC as directly playable SID files",
+    subtitle: "Demos, intros, and tools from the local SID library",
     placeholder: "Search demos",
     tracks: ctx.catalog.demos,
     empty: "No demos found.",

@@ -4,7 +4,7 @@ import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.
 export function mount(host, ctx) {
   mountTypeBrowser(host, ctx, {
     title: "Games",
-    subtitle: "C64 games from the HVSC as directly playable SID files",
+    subtitle: "C64 game music from the local SID library",
     placeholder: "Search games",
     tracks: ctx.catalog.games,
     empty: "No games found.",

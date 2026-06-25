@@ -156,8 +156,8 @@ function renderStats(ctx) {
 
 function renderLibraryPicker(ctx) {
   if (!ctx.native) return el("span", { hidden: true });
-  const title = el("strong", {}, "HVSC Collection");
-  const sub = el("small", {}, ctx.native.state?.hvscRootLabel || "No HVSC selected");
+  const title = el("strong", {}, "SID Collection");
+  const sub = el("small", {}, ctx.native.state?.hvscRootLabel || "No SID folder selected");
   const btn = el("button", {
     class: "native-library-card",
     onclick: async () => {
@@ -165,7 +165,7 @@ function renderLibraryPicker(ctx) {
         btn.disabled = true;
         await ctx.native.chooseHVSCRoot();
       } catch (error) {
-        ctx.toast.error(`Could not open HVSC: ${error.message || error}`);
+        ctx.toast.error(`Could not open SID folder: ${error.message || error}`);
       } finally {
         btn.disabled = false;
       }
