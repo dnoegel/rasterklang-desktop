@@ -65,6 +65,21 @@ cat > "$ARTIFACT_DIR/assets/hvsc-library.json" <<'JSON'
 []
 JSON
 
+node - "$ARTIFACT_DIR/rasterklang-webplayer.json" "$ARTIFACT_DIR/assets/hvsc-library.json" <<'NODE'
+const { createHash } = require("node:crypto");
+const { readFileSync, writeFileSync } = require("node:fs");
+const [metadataPath, catalogPath] = process.argv.slice(2);
+const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+metadata.assets = {
+  ...(metadata.assets || {}),
+  hvscLibrary: {
+    path: "assets/hvsc-library.json",
+    sha256: createHash("sha256").update(readFileSync(catalogPath)).digest("hex"),
+  },
+};
+writeFileSync(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
+
 cat > "$ARTIFACT_DIR/src/shell/shell.js" <<'JS'
 const SECTION_VERSION = "source-version";
 export { SECTION_VERSION };
@@ -112,6 +127,37 @@ if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
 fi
 
 grep -q "WEBPLAYER_ARTIFACT_SHA256 is required" "$TMP_DIR/no-checksum.err"
+
+NO_CATALOG_HASH_ARTIFACT_DIR="$TMP_DIR/no-catalog-hash-artifact"
+NO_CATALOG_HASH_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-no-catalog-hash.tar.gz"
+NO_CATALOG_HASH_OUTPUT_DIR="$TMP_DIR/no-catalog-hash-output"
+cp -R "$ARTIFACT_DIR" "$NO_CATALOG_HASH_ARTIFACT_DIR"
+node - "$NO_CATALOG_HASH_ARTIFACT_DIR/rasterklang-webplayer.json" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+const path = process.argv[2];
+const metadata = JSON.parse(readFileSync(path, "utf8"));
+delete metadata.assets.hvscLibrary.sha256;
+writeFileSync(path, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
+tar -C "$NO_CATALOG_HASH_ARTIFACT_DIR" -czf "$NO_CATALOG_HASH_ARCHIVE" .
+
+if command -v sha256sum >/dev/null 2>&1; then
+  NO_CATALOG_HASH_CHECKSUM="$(sha256sum "$NO_CATALOG_HASH_ARCHIVE" | awk '{print $1}')"
+else
+  NO_CATALOG_HASH_CHECKSUM="$(shasum -a 256 "$NO_CATALOG_HASH_ARCHIVE" | awk '{print $1}')"
+fi
+
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$NO_CATALOG_HASH_ARCHIVE" \
+  WEBPLAYER_ARTIFACT_SHA256="$NO_CATALOG_HASH_CHECKSUM" \
+  SYNC_OUTPUT_DIR="$NO_CATALOG_HASH_OUTPUT_DIR" \
+  ASSET_VERSION="artifact-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/no-catalog-hash.err"; then
+  echo "sync accepted a webplayer artifact without assets.hvscLibrary.sha256" >&2
+  exit 1
+fi
+
+grep -q "assets.hvscLibrary.sha256" "$TMP_DIR/no-catalog-hash.err"
 
 BAD_VERSION_ARTIFACT_DIR="$TMP_DIR/bad-version-artifact"
 BAD_VERSION_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-version.tar.gz"

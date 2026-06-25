@@ -312,6 +312,8 @@ webplayer artifact. Desktop checks these fields before release:
 - `bridgeApiVersion` must match `webplayer.lock.bridgeApiVersion`.
 - `requiredDesktopCapabilities` must match
   `webplayer.lock.requiredDesktopCapabilities`.
+- `assets.hvscLibrary.sha256` must match the embedded
+  `assets/hvsc-library.json` catalog.
 - Every required desktop capability must be implemented by both
   `frontend/dist/wailsjs/go/main/App.js` and `app.go`.
 

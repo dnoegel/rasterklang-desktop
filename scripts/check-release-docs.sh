@@ -61,6 +61,7 @@ require_text README.md 'artifact.checksumSha256` must contain the exact release 
 require_text README.md 'the release tag and archive name inside `artifact.url` must match'
 require_text README.md 'must exactly match `webplayer.lock.artifact.url`'
 require_text README.md 'version` and `assetVersion` must match the `ASSET_VERSION`'
+require_text README.md 'assets.hvscLibrary.sha256'
 require_text README.md 'provenance.sourceDirty` must be `false`'
 require_text README.md "rasterklang-desktop_0.1.0_amd64.deb"
 require_text README.md "sudo apt install ./rasterklang-desktop_0.1.0_amd64.deb"
@@ -92,6 +93,7 @@ reject_text app.go "gespeicherte HVSC Ordner"
 require_text CHANGELOG.md "## Unreleased"
 require_text CHANGELOG.md "## v0.1.0"
 require_text CHANGELOG.md "pinned"
+require_text CHANGELOG.md "assets.hvscLibrary.sha256"
 require_text CHANGELOG.md "rasterklang-webplayer"
 require_text CHANGELOG.md "macOS and Linux"
 

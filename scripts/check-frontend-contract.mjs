@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 
 const requiredFiles = [
@@ -16,7 +17,9 @@ for (const file of requiredFiles) {
   assert.ok(existsSync(file), `${file} should exist in embedded frontend/dist`);
 }
 
-const manifest = JSON.parse(readFileSync("frontend/dist/assets/hvsc-library.json", "utf8"));
+const manifestBytes = readFileSync("frontend/dist/assets/hvsc-library.json");
+const manifest = JSON.parse(manifestBytes.toString("utf8"));
+const manifestSha256 = createHash("sha256").update(manifestBytes).digest("hex");
 assert.equal(typeof manifest.generatedAt, "string", "HVSC manifest should include generatedAt");
 assert.ok(Number(manifest.trackCount) > 0, "HVSC manifest should include tracks");
 assert.ok(Array.isArray(manifest.tracks), "HVSC manifest tracks should be an array");
@@ -25,6 +28,14 @@ const metadata = JSON.parse(readFileSync("frontend/dist/rasterklang-webplayer.js
 const lock = JSON.parse(readFileSync("webplayer.lock", "utf8"));
 assert.equal(metadata.name, lock.package);
 assert.equal(metadata.bridgeApiVersion, lock.bridgeApiVersion);
+assert.deepEqual(
+  metadata.assets?.hvscLibrary,
+  {
+    path: "assets/hvsc-library.json",
+    sha256: manifestSha256,
+  },
+  "webplayer metadata should record the embedded SID library catalog hash",
+);
 assert.ok(
   Array.isArray(metadata.requiredDesktopCapabilities),
   "webplayer metadata should declare requiredDesktopCapabilities",

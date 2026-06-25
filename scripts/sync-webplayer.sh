@@ -43,10 +43,11 @@ validate_tar_paths() {
 }
 
 validate_webplayer_contract() {
-  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" "${WEBPLAYER_ARTIFACT:+artifact}" <<'NODE'
+  local hvsc_sha="$1"
+  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" "${WEBPLAYER_ARTIFACT:+artifact}" "$hvsc_sha" <<'NODE'
 const { readFileSync } = require("node:fs");
 
-const [lockPath, metadataPath, expectedAssetVersion, sourceMode] = process.argv.slice(2);
+const [lockPath, metadataPath, expectedAssetVersion, sourceMode, expectedHvscSha256] = process.argv.slice(2);
 const lock = JSON.parse(readFileSync(lockPath, "utf8"));
 const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
 
@@ -102,6 +103,20 @@ if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     ].join("\n"),
   );
 }
+
+if (metadata.assets?.hvscLibrary?.path !== "assets/hvsc-library.json") {
+  fail("webplayer artifact assets.hvscLibrary.path must be assets/hvsc-library.json");
+}
+
+if (metadata.assets?.hvscLibrary?.sha256 !== expectedHvscSha256) {
+  fail(
+    [
+      "webplayer artifact assets.hvscLibrary.sha256 does not match assets/hvsc-library.json",
+      `expected: ${expectedHvscSha256}`,
+      `actual:   ${metadata.assets?.hvscLibrary?.sha256 || "<missing>"}`,
+    ].join("\n"),
+  );
+}
 NODE
 }
 
@@ -127,6 +142,12 @@ write_checkout_metadata() {
     "ToggleMute",
     "TogglePause"
   ],
+  "assets": {
+    "hvscLibrary": {
+      "path": "assets/hvsc-library.json",
+      "sha256": "$HVSC_LIBRARY_SHA256"
+    }
+  },
   "source": {
     "type": "sibling-checkout",
     "path": "$WEBPLAYER_DIR"
@@ -175,10 +196,9 @@ if [[ -n "$WEBPLAYER_ARTIFACT" && ! -f "$STAGE_DIR/rasterklang-webplayer.json" ]
 fi
 
 if [[ -z "$WEBPLAYER_ARTIFACT" && ! -f "$STAGE_DIR/rasterklang-webplayer.json" ]]; then
+  HVSC_LIBRARY_SHA256="$(calculate_sha256 "$STAGE_DIR/assets/hvsc-library.json")"
   write_checkout_metadata
 fi
-
-validate_webplayer_contract
 
 for required in app.js index.html styles.css assets/hvsc-library.json src/shell/shell.js; do
   if [[ ! -e "$STAGE_DIR/$required" ]]; then
@@ -186,6 +206,9 @@ for required in app.js index.html styles.css assets/hvsc-library.json src/shell/
     exit 1
   fi
 done
+
+HVSC_LIBRARY_SHA256="${HVSC_LIBRARY_SHA256:-$(calculate_sha256 "$STAGE_DIR/assets/hvsc-library.json")}"
+validate_webplayer_contract "$HVSC_LIBRARY_SHA256"
 
 if [[ -d "$OVERLAY_DIR" ]]; then
   cp -R "$OVERLAY_DIR"/. "$STAGE_DIR"/

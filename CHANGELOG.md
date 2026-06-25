@@ -19,6 +19,8 @@ public tag is created. The project follows semantic version-style tags such as
   packaging.
 - Added frontend contract checks for embedded webplayer metadata, required Wails
   bridge capabilities, desktop override boundaries, and bridge API versioning.
+- Added `assets.hvscLibrary.sha256` validation so desktop sync and embedded
+  frontend checks prove the webplayer catalog metadata matches the shipped file.
 - Added native browser-local `.sid` upload playback through the Wails bridge;
   uploaded bytes are parsed locally and played by the Go audio engine without an
   HVSC root.

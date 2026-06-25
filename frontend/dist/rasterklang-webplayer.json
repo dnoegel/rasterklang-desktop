@@ -18,6 +18,12 @@
     "ToggleMute",
     "TogglePause"
   ],
+  "assets": {
+    "hvscLibrary": {
+      "path": "assets/hvsc-library.json",
+      "sha256": "5878c4d2231d37ab6b9e7d162375a4146e8884de33bd0fa067d8f1794146d609"
+    }
+  },
   "source": {
     "type": "sibling-checkout",
     "path": "/Users/d.noegel/programming/sidplayer/rasterklang-desktop/../rasterklang-webplayer"
