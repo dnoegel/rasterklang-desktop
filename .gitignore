@@ -1,4 +1,5 @@
 /bin/
+/dist/
 /rasterklang-desktop
 /build/*.app/
 /build/*.icns

@@ -5,7 +5,7 @@
 //   - Events broadcast over the shared event bus
 //
 // All higher-level UI uses this controller; nothing imports the SDK directly.
-import { loadSdk } from "./sdk.js?v=2026-06-06-180836";
+import { loadSdk } from "./sdk.js?v=dev";
 
 const SEEK_YIELD_MS = 16;
 const EQ_STORAGE_KEY = "rasterklang-webplayer:eq";

@@ -1,5 +1,5 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { entityCard, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
+import { entityCard, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=dev";
 
 let api = null;
 

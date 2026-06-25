@@ -4,12 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 WEBPLAYER_DIR="${WEBPLAYER_DIR:-"$ROOT_DIR/../rasterklang-webplayer"}"
-DIST_DIR="$ROOT_DIR/frontend/dist"
+WEBPLAYER_ARTIFACT="${WEBPLAYER_ARTIFACT:-}"
+WEBPLAYER_ARTIFACT_SHA256="${WEBPLAYER_ARTIFACT_SHA256:-}"
+DIST_DIR="${SYNC_OUTPUT_DIR:-"$ROOT_DIR/frontend/dist"}"
 OVERLAY_DIR="$ROOT_DIR/frontend/overrides"
 VERSION="${ASSET_VERSION:-$(date -u +%Y-%m-%d-%H%M%S)}"
 
-if [[ ! -d "$WEBPLAYER_DIR/src" ]]; then
-  echo "webplayer source not found at: $WEBPLAYER_DIR" >&2
+if [[ -z "$DIST_DIR" || "$DIST_DIR" == "/" ]]; then
+  echo "refusing to sync into unsafe output directory: ${DIST_DIR:-<empty>}" >&2
   exit 1
 fi
 
@@ -19,10 +21,155 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 
 mkdir -p "$STAGE_DIR"
 
-for name in app.js index.html styles.css assets src; do
-  entry="$WEBPLAYER_DIR/$name"
-  if [[ -e "$entry" ]]; then
-    cp -R "$entry" "$STAGE_DIR/"
+calculate_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
+validate_tar_paths() {
+  local archive="$1"
+  local entry
+  while IFS= read -r entry; do
+    case "$entry" in
+      /*|../*|*/../*)
+        echo "unsafe path in webplayer artifact: $entry" >&2
+        exit 1
+        ;;
+    esac
+  done < <(tar -tzf "$archive")
+}
+
+validate_webplayer_contract() {
+  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" <<'NODE'
+const { readFileSync } = require("node:fs");
+
+const [lockPath, metadataPath] = process.argv.slice(2);
+const lock = JSON.parse(readFileSync(lockPath, "utf8"));
+const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}
+
+function uniqueSortedStrings(value, label) {
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string" || !entry.trim())) {
+    fail(`${label} must be an array of non-empty strings`);
+  }
+  const sorted = [...value].sort();
+  for (let index = 1; index < sorted.length; index += 1) {
+    if (sorted[index] === sorted[index - 1]) {
+      fail(`${label} contains duplicate capability: ${sorted[index]}`);
+    }
+  }
+  return sorted;
+}
+
+if (metadata.name !== lock.package) {
+  fail(`webplayer artifact package mismatch: expected ${lock.package}, got ${metadata.name}`);
+}
+
+if (metadata.bridgeApiVersion !== lock.bridgeApiVersion) {
+  fail(
+    `webplayer bridgeApiVersion mismatch: expected ${lock.bridgeApiVersion}, got ${metadata.bridgeApiVersion}`,
+  );
+}
+
+const expected = uniqueSortedStrings(lock.requiredDesktopCapabilities, "webplayer.lock requiredDesktopCapabilities");
+const actual = uniqueSortedStrings(metadata.requiredDesktopCapabilities, "webplayer artifact requiredDesktopCapabilities");
+
+if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+  fail(
+    [
+      "webplayer artifact requiredDesktopCapabilities do not match webplayer.lock",
+      `expected: ${expected.join(", ")}`,
+      `actual:   ${actual.join(", ")}`,
+    ].join("\n"),
+  );
+}
+NODE
+}
+
+write_checkout_metadata() {
+  cat > "$STAGE_DIR/rasterklang-webplayer.json" <<JSON
+{
+  "name": "rasterklang-webplayer-ui",
+  "version": "$VERSION",
+  "assetVersion": "$VERSION",
+  "bridgeApiVersion": "1",
+  "entrypoint": "index.html",
+  "staticRoot": ".",
+  "requiredDesktopCapabilities": [
+    "GetPlaybackState",
+    "LoadTrack",
+    "PlayTrack",
+    "ResetEqualizer",
+    "Seek",
+    "SetAudioControls",
+    "SetEqualizer",
+    "SetVolume",
+    "Stop",
+    "ToggleMute",
+    "TogglePause"
+  ],
+  "source": {
+    "type": "sibling-checkout",
+    "path": "$WEBPLAYER_DIR"
+  }
+}
+JSON
+}
+
+if [[ -n "$WEBPLAYER_ARTIFACT" ]]; then
+  if [[ ! -f "$WEBPLAYER_ARTIFACT" ]]; then
+    echo "webplayer artifact not found at: $WEBPLAYER_ARTIFACT" >&2
+    exit 1
+  fi
+  if [[ -n "$WEBPLAYER_ARTIFACT_SHA256" ]]; then
+    expected_sha="${WEBPLAYER_ARTIFACT_SHA256%%[[:space:]]*}"
+    actual_sha="$(calculate_sha256 "$WEBPLAYER_ARTIFACT")"
+    if [[ "$actual_sha" != "$expected_sha" ]]; then
+      echo "webplayer artifact checksum mismatch" >&2
+      echo "expected: $expected_sha" >&2
+      echo "actual:   $actual_sha" >&2
+      exit 1
+    fi
+  fi
+  validate_tar_paths "$WEBPLAYER_ARTIFACT"
+  tar -xzf "$WEBPLAYER_ARTIFACT" -C "$STAGE_DIR"
+  SOURCE_LABEL="$WEBPLAYER_ARTIFACT"
+else
+  if [[ ! -d "$WEBPLAYER_DIR/src" ]]; then
+    echo "webplayer source not found at: $WEBPLAYER_DIR" >&2
+    exit 1
+  fi
+  for name in app.js index.html styles.css assets src; do
+    entry="$WEBPLAYER_DIR/$name"
+    if [[ -e "$entry" ]]; then
+      cp -R "$entry" "$STAGE_DIR/"
+    fi
+  done
+  SOURCE_LABEL="$WEBPLAYER_DIR"
+fi
+
+if [[ -n "$WEBPLAYER_ARTIFACT" && ! -f "$STAGE_DIR/rasterklang-webplayer.json" ]]; then
+  echo "webplayer artifact is missing rasterklang-webplayer.json" >&2
+  exit 1
+fi
+
+if [[ -z "$WEBPLAYER_ARTIFACT" && ! -f "$STAGE_DIR/rasterklang-webplayer.json" ]]; then
+  write_checkout_metadata
+fi
+
+validate_webplayer_contract
+
+for required in app.js index.html styles.css assets/hvsc-library.json src/shell/shell.js; do
+  if [[ ! -e "$STAGE_DIR/$required" ]]; then
+    echo "webplayer package is missing required file: $required" >&2
+    exit 1
   fi
 done
 
@@ -41,4 +188,4 @@ rm -rf "$DIST_DIR"
 mkdir -p "$(dirname "$DIST_DIR")"
 mv "$STAGE_DIR" "$DIST_DIR"
 
-echo "Synced rasterklang-webplayer into rasterklang-desktop frontend/dist (asset version: $VERSION)"
+echo "Synced rasterklang-webplayer from $SOURCE_LABEL into $DIST_DIR (asset version: $VERSION)"

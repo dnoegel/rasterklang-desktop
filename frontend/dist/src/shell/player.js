@@ -1,5 +1,5 @@
 import { el, svg, fmtTime, clamp } from "../lib/ui.js";
-import { currentTrack, formatDuration, playNextTrack, playPrevTrack } from "../lib/catalog.js?v=2026-06-06-180836";
+import { currentTrack, formatDuration, playNextTrack, playPrevTrack } from "../lib/catalog.js?v=dev";
 
 export function mountPlayer(host, ctx) {
   let autoAdvanceKey = "";

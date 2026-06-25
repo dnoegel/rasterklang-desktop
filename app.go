@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	sid "github.com/dnoegel/rasterklang"
+	sid "github.com/dnoegel/rasterklang-cli"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 

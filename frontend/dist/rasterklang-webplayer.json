@@ -1,0 +1,25 @@
+{
+  "name": "rasterklang-webplayer-ui",
+  "version": "dev",
+  "assetVersion": "dev",
+  "bridgeApiVersion": "1",
+  "entrypoint": "index.html",
+  "staticRoot": ".",
+  "requiredDesktopCapabilities": [
+    "GetPlaybackState",
+    "LoadTrack",
+    "PlayTrack",
+    "ResetEqualizer",
+    "Seek",
+    "SetAudioControls",
+    "SetEqualizer",
+    "SetVolume",
+    "Stop",
+    "ToggleMute",
+    "TogglePause"
+  ],
+  "source": {
+    "type": "sibling-checkout",
+    "path": "/Users/d.noegel/programming/sidplayer/rasterklang-desktop/../rasterklang-webplayer"
+  }
+}

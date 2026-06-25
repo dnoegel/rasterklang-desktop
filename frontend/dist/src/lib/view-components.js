@@ -1,5 +1,5 @@
 import { clear, el, svg } from "./ui.js";
-import { currentTrack, formatDuration, playTrack } from "./catalog.js?v=2026-06-06-180836";
+import { currentTrack, formatDuration, playTrack } from "./catalog.js?v=dev";
 
 const DEFAULT_PAGE_SIZE = 200;
 

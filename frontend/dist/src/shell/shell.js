@@ -1,8 +1,8 @@
 import { el, clear, svg } from "../lib/ui.js";
 import { createRouter } from "./router.js";
-import { mountPlayer } from "./player.js?v=2026-06-06-180836";
+import { mountPlayer } from "./player.js?v=dev";
 
-const SECTION_VERSION = "2026-06-06-180836";
+const SECTION_VERSION = "dev";
 
 const SECTIONS = {
   home: { label: "Home", icon: "home", load: () => loadSection("home") },

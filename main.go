@@ -2,7 +2,10 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -17,7 +20,23 @@ var assets embed.FS
 //go:embed build/appicon.png
 var appIcon []byte
 
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
+
 func main() {
+	if handled, code := handleCommandLine(os.Args[1:], os.Stdout, os.Stderr); handled {
+		os.Exit(code)
+	}
+	if len(os.Args) > 1 && os.Args[1] == "--smoke" {
+		if err := runDesktopSmoke(assets, os.Stdout); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	manifest, err := assets.ReadFile("frontend/dist/assets/hvsc-library.json")
 	if err != nil {
 		log.Fatal(err)
@@ -66,4 +85,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleCommandLine(args []string, stdout, _ io.Writer) (bool, int) {
+	if len(args) == 0 {
+		return false, 0
+	}
+	switch args[0] {
+	case "-version", "--version", "version":
+		printVersion(stdout)
+		return true, 0
+	default:
+		return false, 0
+	}
+}
+
+func printVersion(w io.Writer) {
+	fmt.Fprintf(w, "rasterklang-desktop %s\ncommit %s\nbuilt %s\n", version, commit, date)
 }

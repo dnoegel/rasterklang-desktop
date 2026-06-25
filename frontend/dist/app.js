@@ -1,12 +1,12 @@
-import { mountShell } from "./src/shell/shell.js?v=2026-06-06-180836";
+import { mountShell } from "./src/shell/shell.js?v=dev";
 import { createNativeEngineController } from "./src/lib/native-engine.js";
 import { createEventBus } from "./src/lib/events.js";
 import { createToast } from "./src/lib/ui.js";
-import { createCatalog } from "./src/lib/catalog.js?v=2026-06-06-180836";
+import { createCatalog } from "./src/lib/catalog.js?v=dev";
 import { createNativeFavorites } from "./src/lib/native-favorites.js";
 import { ChooseHVSCRoot, GetLibraryState } from "./wailsjs/go/main/App.js";
 
-const APP_VERSION = "2026-06-06-180836";
+const APP_VERSION = "dev";
 const APP_NAME = "Rasterklang";
 
 async function boot() {

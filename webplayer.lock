@@ -1,0 +1,33 @@
+{
+  "package": "rasterklang-webplayer-ui",
+  "repo": "rasterklang-webplayer",
+  "status": "pending-first-release",
+  "version": "0.1.0",
+  "bridgeApiVersion": "1",
+  "requiredDesktopCapabilities": [
+    "GetPlaybackState",
+    "LoadTrack",
+    "PlayTrack",
+    "ResetEqualizer",
+    "Seek",
+    "SetAudioControls",
+    "SetEqualizer",
+    "SetVolume",
+    "Stop",
+    "ToggleMute",
+    "TogglePause"
+  ],
+  "artifact": {
+    "filePattern": "rasterklang-webplayer-ui-{version}.tar.gz",
+    "checksumSha256": null,
+    "checksumRequiredForRelease": true,
+    "generatedBy": "make dist-ui VERSION={version}"
+  },
+  "sync": {
+    "script": "scripts/sync-webplayer.sh",
+    "artifactEnv": "WEBPLAYER_ARTIFACT",
+    "checksumEnv": "WEBPLAYER_ARTIFACT_SHA256",
+    "assetVersionEnv": "ASSET_VERSION",
+    "developmentFallbackPath": "../rasterklang-webplayer"
+  }
+}

@@ -3,7 +3,7 @@ module github.com/dnoegel/rasterklang-desktop
 go 1.26
 
 require (
-	github.com/dnoegel/rasterklang v0.1.0
+	github.com/dnoegel/rasterklang-cli v0.1.0
 	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/wailsapp/wails/v2 v2.12.0
 )

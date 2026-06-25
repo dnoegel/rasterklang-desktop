@@ -1,5 +1,5 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { entityCard, pagedGrid, sectionHead, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
+import { entityCard, pagedGrid, sectionHead, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=dev";
 
 export function mount(host, ctx) {
   const state = { q: "", tuneType: "" };

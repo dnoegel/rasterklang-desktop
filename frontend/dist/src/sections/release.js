@@ -1,6 +1,6 @@
 import { clear, el, svg } from "../lib/ui.js";
-import { playTrack } from "../lib/catalog.js?v=2026-06-06-180836";
-import { cover, pill, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=2026-06-06-180836";
+import { playTrack } from "../lib/catalog.js?v=dev";
+import { cover, pill, sectionHead, trackTable, tuneTypeSelect, typeLabel } from "../lib/view-components.js?v=dev";
 
 export function mount(host, ctx, params = {}) {
   const release = ctx.catalog.releaseById.get(params.id);

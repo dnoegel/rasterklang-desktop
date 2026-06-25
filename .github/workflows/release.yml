@@ -1,0 +1,101 @@
+name: Desktop Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      webplayer_artifact_url:
+        description: "GitHub Release URL for the rasterklang-webplayer-ui tarball"
+        required: true
+        type: string
+      webplayer_artifact_sha256:
+        description: "Expected SHA-256 for the rasterklang-webplayer-ui tarball"
+        required: true
+        type: string
+      asset_version:
+        description: "Version of the webplayer asset embedded into the desktop build"
+        required: true
+        type: string
+      desktop_version:
+        description: "Desktop release tag/version to publish"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  WEBPLAYER_ARTIFACT_URL: ${{ github.event.inputs.webplayer_artifact_url || vars.WEBPLAYER_ARTIFACT_URL }}
+  WEBPLAYER_ARTIFACT_SHA256: ${{ github.event.inputs.webplayer_artifact_sha256 || vars.WEBPLAYER_ARTIFACT_SHA256 }}
+  ASSET_VERSION: ${{ github.event.inputs.asset_version || github.ref_name }}
+  DESKTOP_VERSION: ${{ github.event.inputs.desktop_version || github.ref_name }}
+
+jobs:
+  dist:
+    name: Dist (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev libasound2-dev
+      - name: Require pinned webplayer artifact
+        run: |
+          test -n "$WEBPLAYER_ARTIFACT_URL"
+          test -n "$WEBPLAYER_ARTIFACT_SHA256"
+      - name: Download pinned webplayer artifact
+        run: |
+          mkdir -p .release-input
+          curl -fsSL "$WEBPLAYER_ARTIFACT_URL" -o .release-input/rasterklang-webplayer-ui.tar.gz
+          if command -v sha256sum >/dev/null 2>&1; then
+            echo "$WEBPLAYER_ARTIFACT_SHA256  .release-input/rasterklang-webplayer-ui.tar.gz" | sha256sum -c -
+          else
+            echo "$WEBPLAYER_ARTIFACT_SHA256  .release-input/rasterklang-webplayer-ui.tar.gz" | shasum -a 256 -c -
+          fi
+      - name: Build desktop release artifact
+        run: |
+          make dist \
+            WEBPLAYER_ARTIFACT="$PWD/.release-input/rasterklang-webplayer-ui.tar.gz" \
+            WEBPLAYER_ARTIFACT_SHA256="$WEBPLAYER_ARTIFACT_SHA256" \
+            ASSET_VERSION="$ASSET_VERSION" \
+            VERSION="$DESKTOP_VERSION" \
+            BUILD_NUMBER="$GITHUB_RUN_NUMBER"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rasterklang-desktop-${{ matrix.os }}
+          path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+            dist/*.app.zip
+            dist/*.app.zip.sha256
+            dist/*.deb
+            dist/*.deb.sha256
+
+  publish:
+    name: Publish GitHub release
+    needs: dist
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.DESKTOP_VERSION }}
+          files: release-assets/*

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	sid "github.com/dnoegel/rasterklang"
+	sid "github.com/dnoegel/rasterklang-cli"
 	"github.com/ebitengine/oto/v3"
 )
 

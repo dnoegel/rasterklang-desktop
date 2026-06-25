@@ -1,5 +1,5 @@
 import { el, clear, debounce } from "../lib/ui.js";
-import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=2026-06-06-180836";
+import { sectionHead, trackTable, tuneTypeSelect } from "../lib/view-components.js?v=dev";
 
 export function mount(host, ctx) {
   mountTypeBrowser(host, ctx, {

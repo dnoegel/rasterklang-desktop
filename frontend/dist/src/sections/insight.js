@@ -1,6 +1,6 @@
 import { el, clear, fmtHex } from "../lib/ui.js";
-import { currentTrack } from "../lib/catalog.js?v=2026-06-06-180836";
-import { pill, sectionHead } from "../lib/view-components.js?v=2026-06-06-180836";
+import { currentTrack } from "../lib/catalog.js?v=dev";
+import { pill, sectionHead } from "../lib/view-components.js?v=dev";
 import { drawFilterResponse, drawOscilloscope, drawSpectrum, drawVoiceShape, fitCanvas } from "../lib/scope.js";
 import {
   REGISTER_MAP,
