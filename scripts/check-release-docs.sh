@@ -54,6 +54,7 @@ require_text README.md "BUILD_VERSION"
 require_text README.md "Desktop/Webplayer Contract"
 require_text README.md "WEBPLAYER_ARTIFACT_SHA256"
 require_text README.md 'version` and `assetVersion` must match the `ASSET_VERSION`'
+require_text README.md 'provenance.sourceDirty` must be `false`'
 require_text README.md "rasterklang-desktop_0.1.0_amd64.deb"
 require_text README.md "sudo apt install ./rasterklang-desktop_0.1.0_amd64.deb"
 require_text README.md "Release Identity Preflight"

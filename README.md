@@ -183,6 +183,9 @@ Tag-triggered release runs can still use repository variables
 `WEBPLAYER_ARTIFACT_URL` and `WEBPLAYER_ARTIFACT_SHA256`. In both modes, the
 workflow downloads that artifact, verifies its checksum, builds macOS and Linux
 artifacts, and publishes the generated archives/checksums to `desktop_version`.
+Artifact metadata must also declare `provenance.sourceDirty` as `false`; release
+sync refuses artifacts built from dirty webplayer source even when their checksum
+matches the supplied SHA-256.
 
 ### Standalone Preflight
 
@@ -289,6 +292,7 @@ webplayer artifact. Desktop checks these fields before release:
 
 - `name` must match `webplayer.lock.package`.
 - `version` and `assetVersion` must match the `ASSET_VERSION` used for sync.
+- `provenance.sourceDirty` must be `false` for release artifacts.
 - `bridgeApiVersion` must match `webplayer.lock.bridgeApiVersion`.
 - `requiredDesktopCapabilities` must match
   `webplayer.lock.requiredDesktopCapabilities`.

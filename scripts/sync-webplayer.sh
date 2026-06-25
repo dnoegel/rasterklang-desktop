@@ -43,10 +43,10 @@ validate_tar_paths() {
 }
 
 validate_webplayer_contract() {
-  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" <<'NODE'
+  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" "${WEBPLAYER_ARTIFACT:+artifact}" <<'NODE'
 const { readFileSync } = require("node:fs");
 
-const [lockPath, metadataPath, expectedAssetVersion] = process.argv.slice(2);
+const [lockPath, metadataPath, expectedAssetVersion, sourceMode] = process.argv.slice(2);
 const lock = JSON.parse(readFileSync(lockPath, "utf8"));
 const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
 
@@ -78,6 +78,10 @@ if (metadata.version !== expectedAssetVersion) {
 
 if (metadata.assetVersion !== expectedAssetVersion) {
   fail(`webplayer artifact assetVersion mismatch: expected ${expectedAssetVersion}, got ${metadata.assetVersion}`);
+}
+
+if (sourceMode === "artifact" && metadata.provenance?.sourceDirty !== false) {
+  fail("webplayer artifact provenance.sourceDirty must be false");
 }
 
 if (metadata.bridgeApiVersion !== lock.bridgeApiVersion) {

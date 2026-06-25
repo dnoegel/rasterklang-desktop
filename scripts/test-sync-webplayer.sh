@@ -32,7 +32,10 @@ cat > "$ARTIFACT_DIR/rasterklang-webplayer.json" <<'JSON'
     "Stop",
     "ToggleMute",
     "TogglePause"
-  ]
+  ],
+  "provenance": {
+    "sourceDirty": false
+  }
 }
 JSON
 
@@ -142,6 +145,41 @@ if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
 fi
 
 grep -q "webplayer artifact version mismatch" "$TMP_DIR/bad-version.err"
+
+DIRTY_ARTIFACT_DIR="$TMP_DIR/dirty-source-artifact"
+DIRTY_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-dirty-source.tar.gz"
+DIRTY_OUTPUT_DIR="$TMP_DIR/dirty-source-output"
+
+cp -R "$ARTIFACT_DIR" "$DIRTY_ARTIFACT_DIR"
+node - "$DIRTY_ARTIFACT_DIR/rasterklang-webplayer.json" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+const path = process.argv[2];
+const metadata = JSON.parse(readFileSync(path, "utf8"));
+metadata.provenance = {
+  ...(metadata.provenance || {}),
+  sourceDirty: true,
+};
+writeFileSync(path, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
+tar -C "$DIRTY_ARTIFACT_DIR" -czf "$DIRTY_ARCHIVE" .
+
+if command -v sha256sum >/dev/null 2>&1; then
+  DIRTY_CHECKSUM="$(sha256sum "$DIRTY_ARCHIVE" | awk '{print $1}')"
+else
+  DIRTY_CHECKSUM="$(shasum -a 256 "$DIRTY_ARCHIVE" | awk '{print $1}')"
+fi
+
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$DIRTY_ARCHIVE" \
+  WEBPLAYER_ARTIFACT_SHA256="$DIRTY_CHECKSUM" \
+  SYNC_OUTPUT_DIR="$DIRTY_OUTPUT_DIR" \
+  ASSET_VERSION="artifact-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/dirty-source.err"; then
+  echo "sync accepted a webplayer artifact built from dirty source" >&2
+  exit 1
+fi
+
+grep -q "provenance.sourceDirty" "$TMP_DIR/dirty-source.err"
 
 BAD_ARTIFACT_DIR="$TMP_DIR/bad-artifact"
 BAD_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-contract.tar.gz"
