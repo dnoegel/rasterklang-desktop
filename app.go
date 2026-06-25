@@ -185,7 +185,7 @@ func (a *App) ChooseHVSCRoot() (*LibraryState, error) {
 	if err != nil {
 		_, _ = runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
 			Type:    runtime.WarningDialog,
-			Title:   "HVSC nicht erkannt",
+			Title:   "SID-Ordner nicht erkannt",
 			Message: err.Error(),
 		})
 		return libraryState(""), err
@@ -544,14 +544,14 @@ func libraryState(root string) *LibraryState {
 		HVSCRoot:           root,
 		HVSCRootConfigured: root != "",
 		HVSCRootValid:      isHVSCRoot(root),
-		HVSCRootLabel:      "Keine HVSC gewaehlt",
+		HVSCRootLabel:      "Kein SID-Ordner gewaehlt",
 	}
 	if state.HVSCRootValid {
 		state.HVSCRootLabel = filepath.Base(root)
 		return state
 	}
 	if root != "" {
-		state.Message = "Der gespeicherte HVSC Ordner ist nicht mehr verfuegbar."
+		state.Message = "Der gespeicherte SID-Ordner ist nicht mehr verfuegbar."
 	}
 	return state
 }

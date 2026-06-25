@@ -85,6 +85,9 @@ reject_text README.md '`HVSC Collection` button'
 reject_text app.go "HVSC Collection oder C64Music Ordner auswaehlen"
 reject_text app.go "lokale HVSC Collection"
 reject_text app.go "sieht nicht wie eine HVSC Collection aus"
+reject_text app.go "HVSC nicht erkannt"
+reject_text app.go "Keine HVSC gewaehlt"
+reject_text app.go "gespeicherte HVSC Ordner"
 
 require_text CHANGELOG.md "## Unreleased"
 require_text CHANGELOG.md "## v0.1.0"

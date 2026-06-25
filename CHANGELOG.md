@@ -23,8 +23,9 @@ public tag is created. The project follows semantic version-style tags such as
   uploaded bytes are parsed locally and played by the Go audio engine without an
   HVSC root.
 - Added artifact sync tests for local archive sync and sibling-checkout fallback.
-- Synced the embedded webplayer snapshot and desktop override copy to describe a
-  local SID collection instead of HVSC-branded first-run and navigation labels.
+- Synced the embedded webplayer snapshot, desktop override copy, and native
+  picker/error states to describe a local SID collection instead of HVSC-branded
+  first-run and navigation labels.
 - Added `make check` as the local and CI release gate for formatting, shell
   syntax, webplayer sync, frontend contract checks, release workflow checks, Go
   vet, and Go tests.
