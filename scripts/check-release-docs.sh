@@ -26,6 +26,15 @@ require_text() {
   fi
 }
 
+reject_text() {
+  local file="$1"
+  local text="$2"
+  if grep -Fq "$text" "$file"; then
+    echo "$file should not mention: $text" >&2
+    exit 1
+  fi
+}
+
 require_text README.md "Release Artifacts"
 require_text README.md "Build Metadata"
 require_text README.md "Release Provenance"
@@ -34,6 +43,8 @@ require_text README.md "Platform Caveats"
 require_text README.md "Platform Support Matrix"
 require_text README.md "GitHub Release download"
 require_text README.md "Generated Debian package"
+require_text README.md "macOS release runner architecture"
+reject_text README.md "macOS arm64/amd64"
 require_text README.md "Unsupported for the first release candidate"
 require_text README.md "No Windows desktop artifact"
 require_text README.md "No native package channels"

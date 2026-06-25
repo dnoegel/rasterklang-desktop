@@ -101,8 +101,9 @@ VERSION=v0.1.0 make dist
 
 ### Platform Caveats
 
-- macOS releases are `.app.zip` archives. They are not signed or notarized yet,
-  so Gatekeeper may require manual approval on first launch.
+- macOS releases are `.app.zip` archives for the current macOS release runner
+  architecture. They are not signed or notarized yet, so Gatekeeper may require
+  manual approval on first launch.
 - Linux releases are `.tar.gz` archives and `.deb` packages for the current
   release runner architecture. The app requires GTK/WebKitGTK and ALSA runtime
   libraries from the distribution.
@@ -118,7 +119,7 @@ VERSION=v0.1.0 make dist
 
 | Platform | First release artifact | Install path | Signing/package status |
 | --- | --- | --- | --- |
-| macOS arm64/amd64 | `.app.zip` | GitHub Release download, then open `Rasterklang.app` manually | Not signed or notarized; first launch may require Gatekeeper approval |
+| macOS release runner architecture | `.app.zip` | GitHub Release download, then open `Rasterklang.app` manually | Not signed or notarized; first launch may require Gatekeeper approval |
 | Linux amd64 on the release runner | `.tar.gz` and `.deb` | GitHub Release download or Generated Debian package with `sudo apt install ./rasterklang-desktop_0.1.0_amd64.deb` | Requires distro GTK/WebKitGTK/ALSA runtime libraries; no apt repository yet |
 | Windows | none | none | Unsupported for the first release candidate; add Wails/WebView2 CI, smoke coverage, and a package path before advertising Windows desktop support |
 
