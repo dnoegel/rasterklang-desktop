@@ -53,6 +53,10 @@ require_text README.md "rasterklang-desktop --version"
 require_text README.md "BUILD_VERSION"
 require_text README.md "Desktop/Webplayer Contract"
 require_text README.md "WEBPLAYER_ARTIFACT_SHA256"
+require_text README.md "Webplayer Lock Preflight"
+require_text README.md "make webplayer-lock-preflight"
+require_text README.md "pending-first-release"
+require_text README.md 'artifact.checksumSha256` must contain the exact release asset SHA-256'
 require_text README.md 'version` and `assetVersion` must match the `ASSET_VERSION`'
 require_text README.md 'provenance.sourceDirty` must be `false`'
 require_text README.md "rasterklang-desktop_0.1.0_amd64.deb"
@@ -87,6 +91,8 @@ require_text CONTRIBUTING.md "Do not commit SID files"
 require_text CONTRIBUTING.md "frontend/dist"
 require_text CONTRIBUTING.md "dist/"
 require_text CONTRIBUTING.md "webplayer.lock"
+require_text CONTRIBUTING.md "make webplayer-lock-preflight"
+require_text CONTRIBUTING.md "scripts/check-webplayer-lock-release.mjs"
 
 require_text SECURITY.md "Supported Versions"
 require_text SECURITY.md "Reporting a Vulnerability"

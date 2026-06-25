@@ -43,7 +43,7 @@ endif
 RUN_ENV := CGO_LDFLAGS="$(WAILS_CGO_LDFLAGS)"
 endif
 
-.PHONY: check icon sync-webplayer run build smoke license-report release-provenance identity-preflight standalone-preflight bundle bundle-darwin dist dist-linux dist-deb dist-darwin checksum install install-darwin install-linux tidy deps-debian release release-preflight
+.PHONY: check icon sync-webplayer run build smoke license-report release-provenance identity-preflight standalone-preflight webplayer-lock-preflight bundle bundle-darwin dist dist-linux dist-deb dist-darwin checksum install install-darwin install-linux tidy deps-debian release release-preflight
 
 check:
 	@fmt="$$(gofmt -l .)"; \
@@ -57,6 +57,8 @@ check:
 	node --check scripts/write-release-provenance.mjs
 	node --check scripts/check-release-identity.mjs
 	node --check scripts/check-standalone-release.mjs
+	node --check scripts/check-webplayer-lock-release.mjs
+	node --check scripts/test-webplayer-lock-release.mjs
 	node --check scripts/build-deb-package.mjs
 	node --check scripts/test-deb-package.mjs
 	node --check scripts/check-generated-frontend-policy.mjs
@@ -69,6 +71,7 @@ check:
 	bash scripts/test-sync-webplayer.sh
 	node scripts/check-frontend-contract.mjs
 	node scripts/check-release-workflows.mjs
+	node scripts/test-webplayer-lock-release.mjs
 	go vet ./...
 	go test ./...
 	$(MAKE) smoke
@@ -115,7 +118,10 @@ identity-preflight:
 standalone-preflight:
 	node scripts/check-standalone-release.mjs
 
-release-preflight: identity-preflight standalone-preflight
+webplayer-lock-preflight:
+	node scripts/check-webplayer-lock-release.mjs
+
+release-preflight: identity-preflight standalone-preflight webplayer-lock-preflight
 
 release: release-preflight dist
 

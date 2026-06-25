@@ -11,6 +11,9 @@ public tag is created. The project follows semantic version-style tags such as
 - Added release workflows that build from a pinned `rasterklang-webplayer` UI
   artifact using `WEBPLAYER_ARTIFACT_URL` and `WEBPLAYER_ARTIFACT_SHA256`.
 - Added `webplayer.lock` as the desktop/webplayer contract record.
+- Added a release preflight that requires `webplayer.lock` to point at a
+  published webplayer release asset with a recorded SHA-256 checksum before
+  desktop release packaging can run.
 - Added frontend contract checks for embedded webplayer metadata, required Wails
   bridge capabilities, desktop override boundaries, and bridge API versioning.
 - Added native browser-local `.sid` upload playback through the Wails bridge;

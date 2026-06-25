@@ -188,6 +188,18 @@ Artifact metadata must also declare `provenance.sourceDirty` as `false`; release
 sync refuses artifacts built from dirty webplayer source even when their checksum
 matches the supplied SHA-256.
 
+### Webplayer Lock Preflight
+
+```sh
+make webplayer-lock-preflight
+```
+
+This verifies `webplayer.lock` points at a published
+`rasterklang-webplayer-ui` GitHub release asset with a recorded SHA-256 checksum.
+The desktop release path runs this preflight before packaging, so the first
+desktop release cannot be built from the sibling checkout fallback or from a
+`pending-first-release` lock.
+
 ### Standalone Preflight
 
 ```sh
@@ -299,6 +311,10 @@ webplayer artifact. Desktop checks these fields before release:
   `webplayer.lock.requiredDesktopCapabilities`.
 - Every required desktop capability must be implemented by both
   `frontend/dist/wailsjs/go/main/App.js` and `app.go`.
+
+Desktop release preflight also checks `webplayer.lock` itself: `status` must be
+`released`, `artifact.url` must point at the published GitHub Release tarball,
+and `artifact.checksumSha256` must contain the exact release asset SHA-256.
 
 ### Bridge Compatibility Rule
 

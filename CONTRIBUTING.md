@@ -39,7 +39,8 @@ Tracked generated snapshot policy:
 - Release builds must sync from WEBPLAYER_ARTIFACT with WEBPLAYER_ARTIFACT_SHA256.
   The sibling checkout fallback is for local development only.
 - The first public release must record its artifact URL and checksum in
-  `webplayer.lock`.
+  `webplayer.lock`, set the lock status to `released`, and pass
+  `make webplayer-lock-preflight`.
 
 `dist/` is generated release output from `make dist`, `make license-report`, and
 `make check`. Do not commit files from `dist/`; release archives, checksums, and
@@ -68,5 +69,5 @@ Release-facing edits should keep these files current:
 - `THIRD_PARTY_NOTICES.md` for dependency, Wails, webplayer, and runtime notices.
 - `webplayer.lock` for the pinned shared UI contract.
 - `.github/workflows/release.yml` for tag-built artifacts.
-- `scripts/check-release-workflows.mjs` and `scripts/check-frontend-contract.mjs`
-  for release contract changes.
+- `scripts/check-release-workflows.mjs`, `scripts/check-frontend-contract.mjs`,
+  and `scripts/check-webplayer-lock-release.mjs` for release contract changes.
