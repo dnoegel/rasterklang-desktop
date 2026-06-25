@@ -149,7 +149,8 @@ a `.sha256` file.
 Desktop archives and Debian packages include `RELEASE_PROVENANCE.json`. It
 records the desktop version, source commit, build date, source repository,
 artifact target, dirty-source flag, pinned webplayer asset version, optional
-webplayer artifact checksum, and available GitHub Actions run context.
+webplayer artifact checksum, `webplayerCatalogSha256` for the embedded
+`assets/hvsc-library.json` catalog, and available GitHub Actions run context.
 
 This is a machine-readable build record, not a signed notarization or
 cryptographic attestation. macOS signing/notarization and package-channel

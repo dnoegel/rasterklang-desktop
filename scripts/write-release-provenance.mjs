@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -33,6 +34,7 @@ const provenance = {
     command: optional("build-command") || "make dist",
     assetVersion: optional("asset-version"),
     webplayerArtifactSha256: optional("webplayer-artifact-sha256"),
+    webplayerCatalogSha256: optional("webplayer-catalog-sha256") || fileSha256(optional("webplayer-catalog")),
     sourceDirty: sourceDirty(),
     github: githubContext(),
   },
@@ -49,6 +51,11 @@ function required(name) {
 
 function optional(name) {
   return args.get(name) || undefined;
+}
+
+function fileSha256(path) {
+  if (!path) return undefined;
+  return createHash("sha256").update(readFileSync(resolve(ROOT_DIR, path))).digest("hex");
 }
 
 function sourceDirty() {

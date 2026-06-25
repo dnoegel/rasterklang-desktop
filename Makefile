@@ -59,6 +59,7 @@ check:
 	node --check scripts/check-standalone-release.mjs
 	node --check scripts/check-webplayer-lock-release.mjs
 	node --check scripts/test-webplayer-lock-release.mjs
+	node --check scripts/test-release-provenance.mjs
 	node --check scripts/build-deb-package.mjs
 	node --check scripts/test-deb-package.mjs
 	node --check scripts/check-generated-frontend-policy.mjs
@@ -68,6 +69,7 @@ check:
 	node --check scripts/check-frontend-contract.mjs
 	node --check scripts/check-release-workflows.mjs
 	node scripts/test-deb-package.mjs
+	node scripts/test-release-provenance.mjs
 	bash scripts/test-sync-webplayer.sh
 	node scripts/check-frontend-contract.mjs
 	node scripts/check-release-workflows.mjs
@@ -110,6 +112,7 @@ release-provenance:
 		--target-arch "$(DIST_ARCH)" \
 		--asset-version "$(ASSET_VERSION)" \
 		--webplayer-artifact-sha256 "$(WEBPLAYER_ARTIFACT_SHA256)" \
+		--webplayer-catalog "frontend/dist/assets/hvsc-library.json" \
 		--build-command "make dist VERSION=$(VERSION)"
 
 identity-preflight:
