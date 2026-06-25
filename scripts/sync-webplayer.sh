@@ -43,10 +43,10 @@ validate_tar_paths() {
 }
 
 validate_webplayer_contract() {
-  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" <<'NODE'
+  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" <<'NODE'
 const { readFileSync } = require("node:fs");
 
-const [lockPath, metadataPath] = process.argv.slice(2);
+const [lockPath, metadataPath, expectedAssetVersion] = process.argv.slice(2);
 const lock = JSON.parse(readFileSync(lockPath, "utf8"));
 const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
 
@@ -70,6 +70,14 @@ function uniqueSortedStrings(value, label) {
 
 if (metadata.name !== lock.package) {
   fail(`webplayer artifact package mismatch: expected ${lock.package}, got ${metadata.name}`);
+}
+
+if (metadata.version !== expectedAssetVersion) {
+  fail(`webplayer artifact version mismatch: expected ${expectedAssetVersion}, got ${metadata.version}`);
+}
+
+if (metadata.assetVersion !== expectedAssetVersion) {
+  fail(`webplayer artifact assetVersion mismatch: expected ${expectedAssetVersion}, got ${metadata.assetVersion}`);
 }
 
 if (metadata.bridgeApiVersion !== lock.bridgeApiVersion) {

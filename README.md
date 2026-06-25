@@ -288,6 +288,7 @@ then implement the native bridge in desktop.
 webplayer artifact. Desktop checks these fields before release:
 
 - `name` must match `webplayer.lock.package`.
+- `version` and `assetVersion` must match the `ASSET_VERSION` used for sync.
 - `bridgeApiVersion` must match `webplayer.lock.bridgeApiVersion`.
 - `requiredDesktopCapabilities` must match
   `webplayer.lock.requiredDesktopCapabilities`.

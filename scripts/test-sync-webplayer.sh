@@ -15,8 +15,8 @@ mkdir -p "$ARTIFACT_DIR/assets" "$ARTIFACT_DIR/src/shell"
 cat > "$ARTIFACT_DIR/rasterklang-webplayer.json" <<'JSON'
 {
   "name": "rasterklang-webplayer-ui",
-  "version": "artifact-test-source",
-  "assetVersion": "artifact-test-source",
+  "version": "artifact-test",
+  "assetVersion": "artifact-test",
   "bridgeApiVersion": "1",
   "entrypoint": "index.html",
   "staticRoot": ".",
@@ -110,6 +110,39 @@ fi
 
 grep -q "WEBPLAYER_ARTIFACT_SHA256 is required" "$TMP_DIR/no-checksum.err"
 
+BAD_VERSION_ARTIFACT_DIR="$TMP_DIR/bad-version-artifact"
+BAD_VERSION_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-version.tar.gz"
+BAD_VERSION_OUTPUT_DIR="$TMP_DIR/bad-version-output"
+
+cp -R "$ARTIFACT_DIR" "$BAD_VERSION_ARTIFACT_DIR"
+node - "$BAD_VERSION_ARTIFACT_DIR/rasterklang-webplayer.json" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+const path = process.argv[2];
+const metadata = JSON.parse(readFileSync(path, "utf8"));
+metadata.version = "stale-artifact";
+metadata.assetVersion = "stale-artifact";
+writeFileSync(path, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
+tar -C "$BAD_VERSION_ARTIFACT_DIR" -czf "$BAD_VERSION_ARCHIVE" .
+
+if command -v sha256sum >/dev/null 2>&1; then
+  BAD_VERSION_CHECKSUM="$(sha256sum "$BAD_VERSION_ARCHIVE" | awk '{print $1}')"
+else
+  BAD_VERSION_CHECKSUM="$(shasum -a 256 "$BAD_VERSION_ARCHIVE" | awk '{print $1}')"
+fi
+
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$BAD_VERSION_ARCHIVE" \
+  WEBPLAYER_ARTIFACT_SHA256="$BAD_VERSION_CHECKSUM" \
+  SYNC_OUTPUT_DIR="$BAD_VERSION_OUTPUT_DIR" \
+  ASSET_VERSION="artifact-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/bad-version.err"; then
+  echo "sync accepted a webplayer artifact with stale version metadata" >&2
+  exit 1
+fi
+
+grep -q "webplayer artifact version mismatch" "$TMP_DIR/bad-version.err"
+
 BAD_ARTIFACT_DIR="$TMP_DIR/bad-artifact"
 BAD_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-contract.tar.gz"
 BAD_OUTPUT_DIR="$TMP_DIR/bad-output"
@@ -134,7 +167,7 @@ if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
   WEBPLAYER_ARTIFACT="$BAD_ARCHIVE" \
   WEBPLAYER_ARTIFACT_SHA256="$BAD_CHECKSUM" \
   SYNC_OUTPUT_DIR="$BAD_OUTPUT_DIR" \
-  ASSET_VERSION="bad-contract" \
+  ASSET_VERSION="artifact-test" \
   "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/bad-contract.err"; then
   echo "sync accepted a webplayer artifact with a stale desktop capability contract" >&2
   exit 1
