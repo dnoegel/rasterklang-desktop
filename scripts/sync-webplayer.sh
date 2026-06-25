@@ -128,15 +128,17 @@ if [[ -n "$WEBPLAYER_ARTIFACT" ]]; then
     echo "webplayer artifact not found at: $WEBPLAYER_ARTIFACT" >&2
     exit 1
   fi
-  if [[ -n "$WEBPLAYER_ARTIFACT_SHA256" ]]; then
-    expected_sha="${WEBPLAYER_ARTIFACT_SHA256%%[[:space:]]*}"
-    actual_sha="$(calculate_sha256 "$WEBPLAYER_ARTIFACT")"
-    if [[ "$actual_sha" != "$expected_sha" ]]; then
-      echo "webplayer artifact checksum mismatch" >&2
-      echo "expected: $expected_sha" >&2
-      echo "actual:   $actual_sha" >&2
-      exit 1
-    fi
+  if [[ -z "$WEBPLAYER_ARTIFACT_SHA256" ]]; then
+    echo "WEBPLAYER_ARTIFACT_SHA256 is required when WEBPLAYER_ARTIFACT is set" >&2
+    exit 1
+  fi
+  expected_sha="${WEBPLAYER_ARTIFACT_SHA256%%[[:space:]]*}"
+  actual_sha="$(calculate_sha256 "$WEBPLAYER_ARTIFACT")"
+  if [[ "$actual_sha" != "$expected_sha" ]]; then
+    echo "webplayer artifact checksum mismatch" >&2
+    echo "expected: $expected_sha" >&2
+    echo "actual:   $actual_sha" >&2
+    exit 1
   fi
   validate_tar_paths "$WEBPLAYER_ARTIFACT"
   tar -xzf "$WEBPLAYER_ARTIFACT" -C "$STAGE_DIR"

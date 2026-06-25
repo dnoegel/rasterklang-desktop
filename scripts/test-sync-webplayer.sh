@@ -98,6 +98,18 @@ if [[ -e "$ROOT_DIR/frontend/dist/artifact-sync-marker.txt" ]]; then
   exit 1
 fi
 
+NO_CHECKSUM_OUTPUT_DIR="$TMP_DIR/no-checksum-output"
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$ARCHIVE" \
+  SYNC_OUTPUT_DIR="$NO_CHECKSUM_OUTPUT_DIR" \
+  ASSET_VERSION="missing-checksum" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/no-checksum.err"; then
+  echo "sync accepted a webplayer artifact without WEBPLAYER_ARTIFACT_SHA256" >&2
+  exit 1
+fi
+
+grep -q "WEBPLAYER_ARTIFACT_SHA256 is required" "$TMP_DIR/no-checksum.err"
+
 BAD_ARTIFACT_DIR="$TMP_DIR/bad-artifact"
 BAD_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-contract.tar.gz"
 BAD_OUTPUT_DIR="$TMP_DIR/bad-output"
