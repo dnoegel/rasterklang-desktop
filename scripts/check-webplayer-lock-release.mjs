@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 
 const lockPath = process.argv[2] ?? "webplayer.lock";
+const suppliedArtifactUrl = process.argv[3];
+const suppliedArtifactSha256 = process.argv[4];
 const expectedPackage = "rasterklang-webplayer-ui";
 const expectedRepo = "rasterklang-webplayer";
 const releaseAssetPattern =
@@ -65,6 +67,8 @@ if (!lock.artifact || typeof lock.artifact !== "object") {
   if (lock.artifact.generatedBy !== "make dist-ui VERSION={version}") {
     errors.push("artifact.generatedBy must be make dist-ui VERSION={version}");
   }
+
+  validateSuppliedReleaseInputs(lock.artifact);
 }
 
 if (errors.length > 0) {
@@ -103,6 +107,24 @@ function validateStringArray(value, label) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function validateSuppliedReleaseInputs(artifact) {
+  if (suppliedArtifactUrl === undefined && suppliedArtifactSha256 === undefined) {
+    return;
+  }
+
+  if (!isNonEmptyString(suppliedArtifactUrl)) {
+    errors.push("artifact URL input is required when validating release inputs");
+  } else if (suppliedArtifactUrl !== artifact.url) {
+    errors.push("artifact URL input must match webplayer.lock artifact.url");
+  }
+
+  if (!isNonEmptyString(suppliedArtifactSha256)) {
+    errors.push("artifact SHA-256 input is required when validating release inputs");
+  } else if (suppliedArtifactSha256 !== artifact.checksumSha256) {
+    errors.push("artifact SHA-256 input must match webplayer.lock artifact.checksumSha256");
+  }
 }
 
 function fail(message) {

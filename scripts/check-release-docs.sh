@@ -53,11 +53,13 @@ require_text README.md "rasterklang-desktop --version"
 require_text README.md "BUILD_VERSION"
 require_text README.md "Desktop/Webplayer Contract"
 require_text README.md "WEBPLAYER_ARTIFACT_SHA256"
+require_text README.md 'release workflow also validates that `WEBPLAYER_ARTIFACT_URL` and'
 require_text README.md "Webplayer Lock Preflight"
 require_text README.md "make webplayer-lock-preflight"
 require_text README.md "pending-first-release"
 require_text README.md 'artifact.checksumSha256` must contain the exact release asset SHA-256'
 require_text README.md 'the release tag and archive name inside `artifact.url` must match'
+require_text README.md 'must exactly match `webplayer.lock.artifact.url`'
 require_text README.md 'version` and `assetVersion` must match the `ASSET_VERSION`'
 require_text README.md 'provenance.sourceDirty` must be `false`'
 require_text README.md "rasterklang-desktop_0.1.0_amd64.deb"

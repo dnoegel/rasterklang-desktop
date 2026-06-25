@@ -14,6 +14,9 @@ public tag is created. The project follows semantic version-style tags such as
 - Added a release preflight that requires `webplayer.lock` to point at a
   published webplayer release asset with a recorded SHA-256 checksum before
   desktop release packaging can run.
+- Hardened the desktop release workflow so supplied webplayer artifact URL and
+  SHA-256 inputs must exactly match `webplayer.lock` before download or
+  packaging.
 - Added frontend contract checks for embedded webplayer metadata, required Wails
   bridge capabilities, desktop override boundaries, and bridge API versioning.
 - Added native browser-local `.sid` upload playback through the Wails bridge;

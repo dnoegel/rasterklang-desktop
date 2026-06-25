@@ -50,6 +50,7 @@ assertIncludes(release, ".github/workflows/release.yml", [
   "WEBPLAYER_ARTIFACT=",
   "ASSET_VERSION=",
   "VERSION=",
+  'node scripts/check-webplayer-lock-release.mjs webplayer.lock "$WEBPLAYER_ARTIFACT_URL" "$WEBPLAYER_ARTIFACT_SHA256"',
   "make dist",
   "dist/*.deb",
   "dist/*.deb.sha256",

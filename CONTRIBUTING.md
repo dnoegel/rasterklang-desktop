@@ -38,6 +38,8 @@ Tracked generated snapshot policy:
 - Commit frontend/dist changes only with the matching webplayer source or artifact update, so reviewers can see why the generated snapshot changed.
 - Release builds must sync from WEBPLAYER_ARTIFACT with WEBPLAYER_ARTIFACT_SHA256.
   The sibling checkout fallback is for local development only.
+- Release workflow inputs must match `webplayer.lock` exactly before artifact
+  download or packaging.
 - The first public release must record its artifact URL and checksum in
   `webplayer.lock`, set the lock status to `released`, and pass
   `make webplayer-lock-preflight`.

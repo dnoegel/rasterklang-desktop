@@ -58,6 +58,8 @@ jobs:
         run: |
           test -n "$WEBPLAYER_ARTIFACT_URL"
           test -n "$WEBPLAYER_ARTIFACT_SHA256"
+      - name: Verify pinned webplayer artifact matches lock
+        run: node scripts/check-webplayer-lock-release.mjs webplayer.lock "$WEBPLAYER_ARTIFACT_URL" "$WEBPLAYER_ARTIFACT_SHA256"
       - name: Download pinned webplayer artifact
         run: |
           mkdir -p .release-input

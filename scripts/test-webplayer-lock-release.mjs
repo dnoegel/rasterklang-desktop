@@ -65,6 +65,23 @@ try {
     },
     "artifact.url release tag and archive name must match webplayer.lock version",
   );
+  expectFailure(
+    releasedLock(),
+    "artifact URL input must match webplayer.lock artifact.url",
+    {
+      artifactUrl:
+        "https://github.com/dnoegel/rasterklang-webplayer/releases/download/v0.1.0/rasterklang-webplayer-ui-v0.1.0-repacked.tar.gz",
+      artifactSha256: releasedLock().artifact.checksumSha256,
+    },
+  );
+  expectFailure(
+    releasedLock(),
+    "artifact SHA-256 input must match webplayer.lock artifact.checksumSha256",
+    {
+      artifactUrl: releasedLock().artifact.url,
+      artifactSha256: "b".repeat(64),
+    },
+  );
 } finally {
   rmSync(tmpDir, { recursive: true, force: true });
 }
@@ -99,22 +116,26 @@ function releasedLock() {
   };
 }
 
-function expectSuccess(lock, description) {
-  const result = run(lock);
+function expectSuccess(lock, description, options) {
+  const result = run(lock, options);
   assert.equal(result.status, 0, `${description}\n${result.stderr}`);
   assert.match(result.stdout, /Webplayer release lock preflight passed/);
 }
 
-function expectFailure(lock, expectedError) {
-  const result = run(lock);
+function expectFailure(lock, expectedError, options) {
+  const result = run(lock, options);
   assert.notEqual(result.status, 0, `expected failure containing ${expectedError}`);
   assert.match(result.stderr, new RegExp(escapeRegExp(expectedError)));
 }
 
-function run(lock) {
+function run(lock, options = {}) {
   const lockPath = join(tmpDir, `${lock.status}-${Math.random().toString(16).slice(2)}.json`);
   writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
-  return spawnSync(process.execPath, [scriptPath, lockPath], {
+  const args = [scriptPath, lockPath];
+  if (options.artifactUrl !== undefined || options.artifactSha256 !== undefined) {
+    args.push(options.artifactUrl ?? "", options.artifactSha256 ?? "");
+  }
+  return spawnSync(process.execPath, args, {
     cwd: rootDir,
     encoding: "utf8",
   });
