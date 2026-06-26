@@ -36,6 +36,20 @@ assert.deepEqual(
   },
   "webplayer metadata should record the embedded SID library catalog hash",
 );
+assert.equal(
+  metadata.source?.type,
+  "sibling-checkout",
+  "checked-in desktop webplayer metadata should identify the local sibling source mode",
+);
+assert.equal(
+  metadata.source?.path,
+  "../rasterklang-webplayer",
+  "checked-in desktop webplayer metadata should use a stable relative source path",
+);
+assert.ok(
+  !isAbsolutePath(metadata.source?.path || ""),
+  "checked-in desktop webplayer metadata must not leak a developer-machine absolute source path",
+);
 assert.ok(
   Array.isArray(metadata.requiredDesktopCapabilities),
   "webplayer metadata should declare requiredDesktopCapabilities",
@@ -131,4 +145,8 @@ function normalizeCapabilities(value, label) {
     assert.notEqual(sorted[index], sorted[index - 1], `${label} should not contain duplicates`);
   }
   return sorted;
+}
+
+function isAbsolutePath(value) {
+  return value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value) || value.startsWith("\\\\");
 }

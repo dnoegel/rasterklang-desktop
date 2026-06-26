@@ -26,6 +26,6 @@
   },
   "source": {
     "type": "sibling-checkout",
-    "path": "/Users/d.noegel/programming/sidplayer/rasterklang-desktop/../rasterklang-webplayer"
+    "path": "../rasterklang-webplayer"
   }
 }

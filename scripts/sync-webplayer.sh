@@ -169,7 +169,7 @@ write_checkout_metadata() {
   },
   "source": {
     "type": "sibling-checkout",
-    "path": "$WEBPLAYER_DIR"
+    "path": "../rasterklang-webplayer"
   }
 }
 JSON
