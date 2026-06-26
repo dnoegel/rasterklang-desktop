@@ -63,7 +63,7 @@ assert.deepEqual(
 const bridgeSource = readFileSync("frontend/dist/wailsjs/go/main/App.js", "utf8");
 const goSource = readFileSync("app.go", "utf8");
 const nativeEngineSource = readFileSync("frontend/dist/src/lib/native-engine.js", "utf8");
-const readme = readFileSync("README.md", "utf8");
+const releaseDocs = readFileSync("docs/release.md", "utf8");
 
 for (const capability of metadata.requiredDesktopCapabilities) {
   assert.match(
@@ -118,20 +118,17 @@ assert.ok(
 );
 
 for (const phrase of [
-  "## Desktop/Webplayer Contract",
+  "Desktop/Webplayer Contract",
   "frontend/overrides/app.js",
   "frontend/overrides/src/lib/native-engine.js",
   "frontend/overrides/src/lib/native-favorites.js",
   "frontend/overrides/wailsjs/go/main/App.js",
-  "must not override shared shell, catalog, route, or presentation modules",
-  "webplayer.lock.requiredDesktopCapabilities",
+  "Overrides must not replace shared shell, catalog, route, or presentation",
   "requiredDesktopCapabilities",
-  "Bridge Compatibility Rule",
   "bridgeApiVersion",
-  "Breaking changes to required Wails bridge calls require a bridgeApiVersion bump",
-  "native upload-byte loading",
+  "Breaking required Wails bridge calls require",
 ]) {
-  assert.ok(readme.includes(phrase), `README.md should document desktop/webplayer contract phrase: ${phrase}`);
+  assert.ok(releaseDocs.includes(phrase), `docs/release.md should document desktop/webplayer contract phrase: ${phrase}`);
 }
 
 function normalizeCapabilities(value, label) {

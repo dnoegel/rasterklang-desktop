@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 const readme = readFileSync("README.md", "utf8");
 const contributing = readFileSync("CONTRIBUTING.md", "utf8");
+const releaseDocs = readFileSync("docs/release.md", "utf8");
 const makefile = readFileSync("Makefile", "utf8");
 
 for (const file of [
@@ -25,13 +26,19 @@ for (const path of ["frontend/dist", "frontend/dist/index.html", "frontend/dist/
 }
 
 for (const phrase of [
-  "Tracked Generated Frontend Snapshot",
-  "frontend/dist is intentionally tracked",
-  "Do not hand-edit frontend/dist",
-  "Release builds must provide WEBPLAYER_ARTIFACT and WEBPLAYER_ARTIFACT_SHA256",
-  "Sibling checkout sync is a development fallback only",
+  "`frontend/dist` is intentionally tracked",
+  "Do not edit it directly",
 ]) {
   assert.ok(readme.includes(phrase), `README.md should document generated frontend policy: ${phrase}`);
+}
+
+for (const phrase of [
+  "Pinned Webplayer Artifact",
+  "WEBPLAYER_ARTIFACT",
+  "WEBPLAYER_ARTIFACT_SHA256",
+  "sibling checkout fallback",
+]) {
+  assert.ok(releaseDocs.includes(phrase), `docs/release.md should document release frontend policy: ${phrase}`);
 }
 
 for (const phrase of [
