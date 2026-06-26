@@ -1,5 +1,6 @@
-// Loads the rasterklang-wasm SDK with cache-busting and falls back gracefully
-// to a minimal "demo" mode if the WASM bundle is not present.
+// Loads the rasterklang-wasm SDK with cache-busting. If every candidate bundle
+// fails to load, callers receive { ok: false, error } and surface the explicit
+// WASM-unavailable state.
 
 const CANDIDATES = [
   { js: "/rasterklang-wasm/dist/rasterklang.js", wasmExec: "/rasterklang-wasm/dist/wasm_exec.js", wasm: "/rasterklang-wasm/dist/rasterklang.wasm" },

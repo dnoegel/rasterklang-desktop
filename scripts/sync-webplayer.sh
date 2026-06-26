@@ -81,8 +81,27 @@ if (metadata.assetVersion !== expectedAssetVersion) {
   fail(`webplayer artifact assetVersion mismatch: expected ${expectedAssetVersion}, got ${metadata.assetVersion}`);
 }
 
-if (sourceMode === "artifact" && metadata.provenance?.sourceDirty !== false) {
-  fail("webplayer artifact provenance.sourceDirty must be false");
+if (sourceMode === "artifact") {
+  const provenance = metadata.provenance || {};
+
+  if (typeof provenance.sourceCommit !== "string" || !/^[0-9a-f]{7,40}$/i.test(provenance.sourceCommit)) {
+    fail("webplayer artifact provenance.sourceCommit must be a Git commit SHA");
+  }
+
+  if (provenance.sourceDirty !== false) {
+    fail("webplayer artifact provenance.sourceDirty must be false");
+  }
+
+  if (typeof provenance.builtAt !== "string" || Number.isNaN(Date.parse(provenance.builtAt))) {
+    fail("webplayer artifact provenance.builtAt must be a valid timestamp");
+  }
+
+  if (
+    typeof provenance.releaseURL !== "string" ||
+    !/^https:\/\/github\.com\/dnoegel\/rasterklang-webplayer\/releases\/tag\/.+/.test(provenance.releaseURL)
+  ) {
+    fail("webplayer artifact provenance.releaseURL must point at the rasterklang-webplayer GitHub release tag");
+  }
 }
 
 if (metadata.bridgeApiVersion !== lock.bridgeApiVersion) {

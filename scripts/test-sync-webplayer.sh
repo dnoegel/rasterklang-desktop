@@ -34,7 +34,10 @@ cat > "$ARTIFACT_DIR/rasterklang-webplayer.json" <<'JSON'
     "TogglePause"
   ],
   "provenance": {
-    "sourceDirty": false
+    "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
+    "sourceDirty": false,
+    "builtAt": "2026-06-26T00:00:00.000Z",
+    "releaseURL": "https://github.com/dnoegel/rasterklang-webplayer/releases/tag/artifact-test"
   }
 }
 JSON
@@ -226,6 +229,38 @@ if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
 fi
 
 grep -q "provenance.sourceDirty" "$TMP_DIR/dirty-source.err"
+
+MISSING_PROVENANCE_ARTIFACT_DIR="$TMP_DIR/missing-provenance-artifact"
+MISSING_PROVENANCE_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-missing-provenance.tar.gz"
+MISSING_PROVENANCE_OUTPUT_DIR="$TMP_DIR/missing-provenance-output"
+
+cp -R "$ARTIFACT_DIR" "$MISSING_PROVENANCE_ARTIFACT_DIR"
+node - "$MISSING_PROVENANCE_ARTIFACT_DIR/rasterklang-webplayer.json" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+const path = process.argv[2];
+const metadata = JSON.parse(readFileSync(path, "utf8"));
+delete metadata.provenance.sourceCommit;
+writeFileSync(path, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
+tar -C "$MISSING_PROVENANCE_ARTIFACT_DIR" -czf "$MISSING_PROVENANCE_ARCHIVE" .
+
+if command -v sha256sum >/dev/null 2>&1; then
+  MISSING_PROVENANCE_CHECKSUM="$(sha256sum "$MISSING_PROVENANCE_ARCHIVE" | awk '{print $1}')"
+else
+  MISSING_PROVENANCE_CHECKSUM="$(shasum -a 256 "$MISSING_PROVENANCE_ARCHIVE" | awk '{print $1}')"
+fi
+
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$MISSING_PROVENANCE_ARCHIVE" \
+  WEBPLAYER_ARTIFACT_SHA256="$MISSING_PROVENANCE_CHECKSUM" \
+  SYNC_OUTPUT_DIR="$MISSING_PROVENANCE_OUTPUT_DIR" \
+  ASSET_VERSION="artifact-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/missing-provenance.err"; then
+  echo "sync accepted a webplayer artifact without provenance.sourceCommit" >&2
+  exit 1
+fi
+
+grep -q "provenance.sourceCommit" "$TMP_DIR/missing-provenance.err"
 
 BAD_ARTIFACT_DIR="$TMP_DIR/bad-artifact"
 BAD_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-contract.tar.gz"
