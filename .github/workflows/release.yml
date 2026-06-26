@@ -1,9 +1,6 @@
 name: Desktop Release
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       webplayer_artifact_url:
@@ -27,10 +24,10 @@ permissions:
   contents: write
 
 env:
-  WEBPLAYER_ARTIFACT_URL: ${{ github.event.inputs.webplayer_artifact_url || vars.WEBPLAYER_ARTIFACT_URL }}
-  WEBPLAYER_ARTIFACT_SHA256: ${{ github.event.inputs.webplayer_artifact_sha256 || vars.WEBPLAYER_ARTIFACT_SHA256 }}
-  ASSET_VERSION: ${{ github.event.inputs.asset_version || github.ref_name }}
-  DESKTOP_VERSION: ${{ github.event.inputs.desktop_version || github.ref_name }}
+  WEBPLAYER_ARTIFACT_URL: ${{ github.event.inputs.webplayer_artifact_url }}
+  WEBPLAYER_ARTIFACT_SHA256: ${{ github.event.inputs.webplayer_artifact_sha256 }}
+  ASSET_VERSION: ${{ github.event.inputs.asset_version }}
+  DESKTOP_VERSION: ${{ github.event.inputs.desktop_version }}
 
 jobs:
   dist:

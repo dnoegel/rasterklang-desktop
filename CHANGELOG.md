@@ -10,6 +10,9 @@ public tag is created. The project follows semantic version-style tags such as
 - Added macOS and Linux release artifact targets with SHA-256 checksum files.
 - Added release workflows that build from a pinned `rasterklang-webplayer` UI
   artifact using `WEBPLAYER_ARTIFACT_URL` and `WEBPLAYER_ARTIFACT_SHA256`.
+- Hardened the release workflow to run only from explicit `workflow_dispatch`
+  inputs, with no tag-triggered release path or repository-variable fallback for
+  the pinned webplayer artifact.
 - Added `webplayer.lock` as the desktop/webplayer contract record.
 - Added a release preflight that requires `webplayer.lock` to point at a
   published webplayer release asset with a recorded SHA-256 checksum before

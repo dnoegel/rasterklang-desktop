@@ -43,8 +43,15 @@ const release = readRequired(".github/workflows/release.yml");
 assertIncludes(release, ".github/workflows/release.yml", [
   "name: Desktop Release",
   "contents: write",
-  "tags:",
-  "v*",
+  "workflow_dispatch:",
+  "webplayer_artifact_url",
+  "webplayer_artifact_sha256",
+  "asset_version",
+  "desktop_version",
+  "github.event.inputs.webplayer_artifact_url",
+  "github.event.inputs.webplayer_artifact_sha256",
+  "github.event.inputs.asset_version",
+  "github.event.inputs.desktop_version",
   "ubuntu-24.04",
   "macos-14",
   "WEBPLAYER_ARTIFACT_URL",
@@ -59,3 +66,15 @@ assertIncludes(release, ".github/workflows/release.yml", [
   "softprops/action-gh-release@v2",
 ]);
 assert.match(release, /sha(256sum|sum -a 256)/, "release workflow should verify checksums");
+for (const forbidden of [
+  "tags:",
+  "v*",
+  "vars.WEBPLAYER_ARTIFACT_URL",
+  "vars.WEBPLAYER_ARTIFACT_SHA256",
+  "|| github.ref_name",
+]) {
+  assert.ok(
+    !release.includes(forbidden),
+    `.github/workflows/release.yml should not include tag-triggered or fallback release input: ${forbidden}`,
+  );
+}

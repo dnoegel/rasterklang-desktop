@@ -70,6 +70,6 @@ Release-facing edits should keep these files current:
 - `CHANGELOG.md` for user-visible changes.
 - `THIRD_PARTY_NOTICES.md` for dependency, Wails, webplayer, and runtime notices.
 - `webplayer.lock` for the pinned shared UI contract.
-- `.github/workflows/release.yml` for tag-built artifacts.
+- `.github/workflows/release.yml` for guarded manual-dispatch artifacts.
 - `scripts/check-release-workflows.mjs`, `scripts/check-frontend-contract.mjs`,
   and `scripts/check-webplayer-lock-release.mjs` for release contract changes.

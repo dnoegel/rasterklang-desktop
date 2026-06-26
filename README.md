@@ -175,19 +175,20 @@ make dist
 ```
 
 The GitHub release workflow accepts the exact webplayer artifact URL and SHA-256
-as `workflow_dispatch` inputs:
+as required `workflow_dispatch` inputs:
 
 - `webplayer_artifact_url`
 - `webplayer_artifact_sha256`
 - `asset_version`
 - `desktop_version`
 
-Tag-triggered release runs can still use repository variables
-`WEBPLAYER_ARTIFACT_URL` and `WEBPLAYER_ARTIFACT_SHA256`. In both modes, the
-release workflow also validates that `WEBPLAYER_ARTIFACT_URL` and
+The release workflow has no tag trigger and no repository-variable fallback for
+the webplayer artifact. The guarded root release helper must dispatch it with
+explicit inputs after approval and after `webplayer.lock` records the published
+artifact. The workflow validates that `WEBPLAYER_ARTIFACT_URL` and
 `WEBPLAYER_ARTIFACT_SHA256` match `webplayer.lock` before downloading the
-artifact. The workflow then verifies the checksum, builds macOS and Linux
-artifacts, and publishes the generated archives/checksums to `desktop_version`.
+artifact, then verifies the checksum, builds macOS and Linux artifacts, and
+publishes the generated archives/checksums to `desktop_version`.
 Artifact metadata must also declare `provenance.sourceDirty` as `false`; release
 sync refuses artifacts built from dirty webplayer source even when their checksum
 matches the supplied SHA-256.
