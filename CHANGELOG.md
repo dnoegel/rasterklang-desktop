@@ -20,6 +20,8 @@ public tag is created. The project follows semantic version-style tags such as
 - Hardened the desktop release workflow so supplied webplayer artifact URL and
   SHA-256 inputs must exactly match `webplayer.lock` before download or
   packaging.
+- Hardened webplayer artifact sync so desktop rejects symlinks and other
+  non-regular archive entries before extracting a pinned UI artifact.
 - Added frontend contract checks for embedded webplayer metadata, required Wails
   bridge capabilities, desktop override boundaries, and bridge API versioning.
 - Added `assets.hvscLibrary.sha256` validation so desktop sync and embedded

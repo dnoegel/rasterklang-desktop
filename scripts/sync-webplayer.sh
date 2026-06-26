@@ -42,6 +42,21 @@ validate_tar_paths() {
   done < <(tar -tzf "$archive")
 }
 
+validate_tar_member_types() {
+  local archive="$1"
+  local listing
+  while IFS= read -r listing; do
+    case "${listing:0:1}" in
+      -|d)
+        ;;
+      *)
+        echo "non-regular entry in webplayer artifact: $listing" >&2
+        exit 1
+        ;;
+    esac
+  done < <(tar -tvzf "$archive")
+}
+
 validate_webplayer_contract() {
   local hvsc_sha="$1"
   node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" "${WEBPLAYER_ARTIFACT:+artifact}" "$hvsc_sha" <<'NODE'
@@ -187,6 +202,7 @@ if [[ -n "$WEBPLAYER_ARTIFACT" ]]; then
     echo "actual:   $actual_sha" >&2
     exit 1
   fi
+  validate_tar_member_types "$WEBPLAYER_ARTIFACT"
   validate_tar_paths "$WEBPLAYER_ARTIFACT"
   tar -xzf "$WEBPLAYER_ARTIFACT" -C "$STAGE_DIR"
   SOURCE_LABEL="$WEBPLAYER_ARTIFACT"

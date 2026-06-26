@@ -301,6 +301,33 @@ fi
 
 grep -q "provenance.sourceCommit" "$TMP_DIR/missing-provenance.err"
 
+SYMLINK_ARTIFACT_DIR="$TMP_DIR/symlink-artifact"
+SYMLINK_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-symlink.tar.gz"
+SYMLINK_OUTPUT_DIR="$TMP_DIR/symlink-output"
+
+cp -R "$ARTIFACT_DIR" "$SYMLINK_ARTIFACT_DIR"
+rm "$SYMLINK_ARTIFACT_DIR/src/shell/shell.js"
+ln -s "/tmp/rasterklang-webplayer-escaped.js" "$SYMLINK_ARTIFACT_DIR/src/shell/shell.js"
+tar -C "$SYMLINK_ARTIFACT_DIR" -czf "$SYMLINK_ARCHIVE" .
+
+if command -v sha256sum >/dev/null 2>&1; then
+  SYMLINK_CHECKSUM="$(sha256sum "$SYMLINK_ARCHIVE" | awk '{print $1}')"
+else
+  SYMLINK_CHECKSUM="$(shasum -a 256 "$SYMLINK_ARCHIVE" | awk '{print $1}')"
+fi
+
+if WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
+  WEBPLAYER_ARTIFACT="$SYMLINK_ARCHIVE" \
+  WEBPLAYER_ARTIFACT_SHA256="$SYMLINK_CHECKSUM" \
+  SYNC_OUTPUT_DIR="$SYMLINK_OUTPUT_DIR" \
+  ASSET_VERSION="artifact-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null 2>"$TMP_DIR/symlink.err"; then
+  echo "sync accepted a webplayer artifact containing a symlink" >&2
+  exit 1
+fi
+
+grep -q "non-regular entry in webplayer artifact" "$TMP_DIR/symlink.err"
+
 BAD_ARTIFACT_DIR="$TMP_DIR/bad-artifact"
 BAD_ARCHIVE="$TMP_DIR/rasterklang-webplayer-ui-bad-contract.tar.gz"
 BAD_OUTPUT_DIR="$TMP_DIR/bad-output"
