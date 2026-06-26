@@ -86,6 +86,23 @@ assert.ok(
   "native engine override should not keep the old upload-not-wired error",
 );
 
+assert.ok(
+  !nativeEngineSource.includes("Instruction-Stepping ist im Native-Bridge-Modus noch nicht aktiv."),
+  "native engine override should not keep the old ad-hoc native stepping stub error",
+);
+assert.ok(
+  nativeEngineSource.includes("ERR_NATIVE_FEATURE_UNSUPPORTED"),
+  "native engine override should expose unsupported native-only feature failures with a stable error code",
+);
+assert.ok(
+  nativeEngineSource.includes("UnsupportedNativeFeatureError"),
+  "native engine override should expose unsupported native-only feature failures with a stable error name",
+);
+assert.ok(
+  nativeEngineSource.includes("stepInstruction"),
+  "native engine override should identify the unsupported instruction-stepping feature",
+);
+
 for (const phrase of [
   "## Desktop/Webplayer Contract",
   "frontend/overrides/app.js",

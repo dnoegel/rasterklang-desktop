@@ -299,7 +299,10 @@ export function createNativeEngineController({ events, toast }) {
     getMasterGain: () => null,
     getAudioContext: () => null,
     createStepStream: async () => {
-      throw new Error("Instruction-Stepping ist im Native-Bridge-Modus noch nicht aktiv.");
+      throw unsupportedNativeFeatureError(
+        "stepInstruction",
+        "Native desktop instruction stepping is not available in this release. Use the browser/WASM debugger for step-through Insight workflows.",
+      );
     },
     isPlaying: () => state.playing && !state.paused,
     isPaused: () => state.paused,
@@ -377,6 +380,14 @@ function nativeCapabilities() {
       nativeAudio: true,
     },
   };
+}
+
+function unsupportedNativeFeatureError(feature, message) {
+  const error = new Error(message);
+  error.name = "UnsupportedNativeFeatureError";
+  error.code = "ERR_NATIVE_FEATURE_UNSUPPORTED";
+  error.feature = feature;
+  return error;
 }
 
 function normalizeEqualizer(value = {}) {

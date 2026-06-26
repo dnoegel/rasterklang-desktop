@@ -303,6 +303,10 @@ The desktop override boundary is intentionally small:
 Overrides must not override shared shell, catalog, route, or presentation modules.
 If desktop needs a new capability, add it to the shared webplayer contract first,
 then implement the native bridge in desktop.
+Unsupported native-only feature calls must fail with `UnsupportedNativeFeatureError`,
+`ERR_NATIVE_FEATURE_UNSUPPORTED`, and the missing feature key, so shared UI code
+can distinguish an intentional first-release desktop boundary from an unexpected
+bridge failure.
 
 `rasterklang-webplayer.json` is the machine-readable contract inside the
 webplayer artifact. Desktop checks these fields before release:

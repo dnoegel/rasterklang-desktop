@@ -19,6 +19,8 @@ assertIncludes(makefile, "Makefile", [
   "dist-darwin:",
   "WEBPLAYER_ARTIFACT",
   "WEBPLAYER_ARTIFACT_SHA256",
+  "MACOSX_DEPLOYMENT_TARGET",
+  "CGO_CFLAGS",
   "check-webplayer-lock-release.mjs",
   "webplayer-lock-preflight",
   "checksum",

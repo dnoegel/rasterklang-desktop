@@ -28,6 +28,7 @@ DIST_BASENAME := rasterklang-desktop_$(VERSION)_$(DIST_OS)_$(DIST_ARCH)
 DIST_ARCHIVE := $(DIST_DIR)/$(DIST_BASENAME).tar.gz
 DIST_APP_ZIP := $(DIST_DIR)/$(DIST_BASENAME).app.zip
 DEB_WORK_ROOT := build/deb
+MACOSX_DEPLOYMENT_TARGET ?= 11.0
 LICENSE_REPORT := $(DIST_DIR)/THIRD_PARTY_LICENSE_REPORT.md
 LICENSE_REPORT_FLAGS ?= --fail-on-unknown
 PROVENANCE := $(DIST_DIR)/RELEASE_PROVENANCE.json
@@ -36,11 +37,15 @@ LDFLAGS := -s -w -X main.version=$(BUILD_VERSION) -X main.commit=$(COMMIT) -X ma
 RUN_ENV :=
 
 ifeq ($(UNAME_S),Darwin)
-WAILS_CGO_LDFLAGS := -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+WAILS_CGO_CFLAGS := -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
+WAILS_CGO_LDFLAGS := -framework UniformTypeIdentifiers -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
+ifneq ($(strip $(CGO_CFLAGS)),)
+WAILS_CGO_CFLAGS := $(CGO_CFLAGS) $(WAILS_CGO_CFLAGS)
+endif
 ifneq ($(strip $(CGO_LDFLAGS)),)
 WAILS_CGO_LDFLAGS := $(CGO_LDFLAGS) $(WAILS_CGO_LDFLAGS)
 endif
-RUN_ENV := CGO_LDFLAGS="$(WAILS_CGO_LDFLAGS)"
+RUN_ENV := MACOSX_DEPLOYMENT_TARGET="$(MACOSX_DEPLOYMENT_TARGET)" CGO_CFLAGS="$(WAILS_CGO_CFLAGS)" CGO_LDFLAGS="$(WAILS_CGO_LDFLAGS)"
 endif
 
 .PHONY: check icon sync-webplayer run build smoke license-report release-provenance identity-preflight standalone-preflight webplayer-lock-preflight bundle bundle-darwin dist dist-linux dist-deb dist-darwin checksum install install-darwin install-linux tidy deps-debian release release-preflight
@@ -68,8 +73,10 @@ check:
 	node scripts/check-generated-frontend-policy.mjs
 	node --check scripts/check-frontend-contract.mjs
 	node --check scripts/check-release-workflows.mjs
+	node --check scripts/test-native-engine-contract.mjs
 	node scripts/test-deb-package.mjs
 	node scripts/test-release-provenance.mjs
+	node scripts/test-native-engine-contract.mjs
 	bash scripts/test-sync-webplayer.sh
 	node scripts/check-frontend-contract.mjs
 	node scripts/check-release-workflows.mjs
