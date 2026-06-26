@@ -4,7 +4,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/rasterklang-desktop-sync-test.XXXXXX")"
-trap 'rm -rf "$TMP_DIR"' EXIT
+LOCK_BACKUP="$TMP_DIR/webplayer.lock.original"
+cp "$ROOT_DIR/webplayer.lock" "$LOCK_BACKUP"
+
+cleanup() {
+  cp "$LOCK_BACKUP" "$ROOT_DIR/webplayer.lock" 2>/dev/null || true
+  rm -rf "$TMP_DIR"
+}
+
+trap cleanup EXIT
 
 ARTIFACT_DIR="$TMP_DIR/artifact"
 OUTPUT_DIR="$TMP_DIR/output"
@@ -99,6 +107,37 @@ if command -v sha256sum >/dev/null 2>&1; then
 else
   CHECKSUM="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
 fi
+
+CHECKOUT_OUTPUT_DIR="$TMP_DIR/checkout-output"
+node - "$ROOT_DIR/webplayer.lock" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+const path = process.argv[2];
+const lock = JSON.parse(readFileSync(path, "utf8"));
+lock.requiredDesktopCapabilities = [
+  ...new Set([
+    ...lock.requiredDesktopCapabilities,
+    "TemporaryCapabilityForSyncTest",
+  ]),
+];
+writeFileSync(path, `${JSON.stringify(lock, null, 2)}\n`);
+NODE
+
+WEBPLAYER_DIR="$ARTIFACT_DIR" \
+SYNC_OUTPUT_DIR="$CHECKOUT_OUTPUT_DIR" \
+ASSET_VERSION="checkout-test" \
+  "$ROOT_DIR/scripts/sync-webplayer.sh" >/dev/null
+
+node - "$CHECKOUT_OUTPUT_DIR/rasterklang-webplayer.json" <<'NODE'
+const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const metadata = JSON.parse(readFileSync(process.argv[2], "utf8"));
+assert.ok(
+  metadata.requiredDesktopCapabilities.includes("TemporaryCapabilityForSyncTest"),
+  "checkout metadata should be generated from webplayer.lock requiredDesktopCapabilities",
+);
+NODE
+
+cp "$LOCK_BACKUP" "$ROOT_DIR/webplayer.lock"
 
 WEBPLAYER_DIR="$TMP_DIR/missing-checkout" \
 WEBPLAYER_ARTIFACT="$ARCHIVE" \

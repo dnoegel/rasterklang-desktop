@@ -140,39 +140,34 @@ NODE
 }
 
 write_checkout_metadata() {
-  cat > "$STAGE_DIR/rasterklang-webplayer.json" <<JSON
-{
-  "name": "rasterklang-webplayer-ui",
-  "version": "$VERSION",
-  "assetVersion": "$VERSION",
-  "bridgeApiVersion": "1",
-  "entrypoint": "index.html",
-  "staticRoot": ".",
-  "requiredDesktopCapabilities": [
-    "GetPlaybackState",
-    "LoadTrack",
-    "PlayTrack",
-    "ResetEqualizer",
-    "Seek",
-    "SetAudioControls",
-    "SetEqualizer",
-    "SetVolume",
-    "Stop",
-    "ToggleMute",
-    "TogglePause"
-  ],
-  "assets": {
-    "hvscLibrary": {
-      "path": "assets/hvsc-library.json",
-      "sha256": "$HVSC_LIBRARY_SHA256"
-    }
+  node - "$ROOT_DIR/webplayer.lock" "$STAGE_DIR/rasterklang-webplayer.json" "$VERSION" "$HVSC_LIBRARY_SHA256" <<'NODE'
+const { readFileSync, writeFileSync } = require("node:fs");
+
+const [lockPath, metadataPath, version, hvscLibrarySha256] = process.argv.slice(2);
+const lock = JSON.parse(readFileSync(lockPath, "utf8"));
+
+const metadata = {
+  name: lock.package,
+  version,
+  assetVersion: version,
+  bridgeApiVersion: lock.bridgeApiVersion,
+  entrypoint: "index.html",
+  staticRoot: ".",
+  requiredDesktopCapabilities: lock.requiredDesktopCapabilities,
+  assets: {
+    hvscLibrary: {
+      path: "assets/hvsc-library.json",
+      sha256: hvscLibrarySha256,
+    },
   },
-  "source": {
-    "type": "sibling-checkout",
-    "path": "../rasterklang-webplayer"
-  }
-}
-JSON
+  source: {
+    type: "sibling-checkout",
+    path: "../rasterklang-webplayer",
+  },
+};
+
+writeFileSync(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
 }
 
 if [[ -n "$WEBPLAYER_ARTIFACT" ]]; then
