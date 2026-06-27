@@ -3,7 +3,7 @@ module github.com/dnoegel/rasterklang-desktop
 go 1.26
 
 require (
-	github.com/dnoegel/rasterklang-cli v0.1.0
+	github.com/dnoegel/rasterklang-cli v0.0.0-20260627144446-4be53918e18b
 	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/wailsapp/wails/v2 v2.12.0
 )
@@ -39,4 +39,3 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
-
