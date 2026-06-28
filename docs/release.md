@@ -131,6 +131,7 @@ Allowed desktop override areas:
 - `frontend/overrides/app.js`
 - `frontend/overrides/src/lib/native-engine.js`
 - `frontend/overrides/src/lib/native-favorites.js`
+- `frontend/overrides/src/lib/native-media-controls.js`
 - `frontend/overrides/wailsjs/go/main/App.js`
 
 Overrides must not replace shared shell, catalog, route, or presentation

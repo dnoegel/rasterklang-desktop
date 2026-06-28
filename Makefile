@@ -78,9 +78,11 @@ check:
 	node --check scripts/check-frontend-contract.mjs
 	node --check scripts/check-release-workflows.mjs
 	node --check scripts/test-native-engine-contract.mjs
+	node --check scripts/test-native-media-controls.mjs
 	node scripts/test-deb-package.mjs
 	node scripts/test-release-provenance.mjs
 	node scripts/test-native-engine-contract.mjs
+	node scripts/test-native-media-controls.mjs
 	bash scripts/test-sync-webplayer.sh
 	node scripts/check-frontend-contract.mjs
 	node scripts/check-release-workflows.mjs

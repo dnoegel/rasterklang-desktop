@@ -10,6 +10,7 @@ const requiredFiles = [
   "frontend/dist/rasterklang-webplayer.json",
   "frontend/dist/src/lib/native-engine.js",
   "frontend/dist/src/lib/native-favorites.js",
+  "frontend/dist/src/lib/native-media-controls.js",
   "frontend/dist/wailsjs/go/main/App.js",
 ];
 
@@ -63,6 +64,7 @@ assert.deepEqual(
 const bridgeSource = readFileSync("frontend/dist/wailsjs/go/main/App.js", "utf8");
 const goSource = readFileSync("app.go", "utf8");
 const nativeEngineSource = readFileSync("frontend/dist/src/lib/native-engine.js", "utf8");
+const nativeMediaControlsSource = readFileSync("frontend/dist/src/lib/native-media-controls.js", "utf8");
 const releaseDocs = readFileSync("docs/release.md", "utf8");
 
 for (const capability of metadata.requiredDesktopCapabilities) {
@@ -105,6 +107,16 @@ assert.ok(
   "native engine override should not keep the old ad-hoc native stepping stub error",
 );
 assert.ok(
+  nativeMediaControlsSource.includes("native.media-control"),
+  "native media controls override should listen for Wails media-control events",
+);
+for (const command of ["play", "pause", "toggle", "next", "previous"]) {
+  assert.ok(
+    nativeMediaControlsSource.includes(`case "${command}"`),
+    `native media controls override should handle ${command}`,
+  );
+}
+assert.ok(
   nativeEngineSource.includes("ERR_NATIVE_FEATURE_UNSUPPORTED"),
   "native engine override should expose unsupported native-only feature failures with a stable error code",
 );
@@ -122,6 +134,7 @@ for (const phrase of [
   "frontend/overrides/app.js",
   "frontend/overrides/src/lib/native-engine.js",
   "frontend/overrides/src/lib/native-favorites.js",
+  "frontend/overrides/src/lib/native-media-controls.js",
   "frontend/overrides/wailsjs/go/main/App.js",
   "Overrides must not replace shared shell, catalog, route, or presentation",
   "requiredDesktopCapabilities",

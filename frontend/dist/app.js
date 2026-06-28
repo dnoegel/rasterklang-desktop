@@ -4,6 +4,7 @@ import { createEventBus } from "./src/lib/events.js";
 import { createToast } from "./src/lib/ui.js";
 import { createCatalog } from "./src/lib/catalog.js?v=dev";
 import { createNativeFavorites } from "./src/lib/native-favorites.js";
+import { mountNativeMediaControls } from "./src/lib/native-media-controls.js";
 import { ChooseHVSCRoot, GetLibraryState } from "./wailsjs/go/main/App.js";
 
 const APP_VERSION = "dev";
@@ -49,6 +50,7 @@ async function boot() {
 
   await engine.loadSDK();
   await mountShell(document.getElementById("app"), ctx);
+  mountNativeMediaControls(ctx);
   document.getElementById("app").removeAttribute("data-loading");
 
   if (!nativeState?.hvscRootValid) {

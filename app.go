@@ -26,6 +26,8 @@ type App struct {
 	configPath string
 	engine     *AudioEngine
 	favorites  *Favorites
+
+	stopMediaControls func()
 }
 
 type appConfig struct {
@@ -131,9 +133,12 @@ func NewApp(manifest []byte) (*App, error) {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.startMediaControls()
 }
 
 func (a *App) shutdown(context.Context) {
+	a.stopMediaControlsIfRunning()
+	a.updateMediaControlPlaybackState(nil)
 	a.engine.Stop()
 }
 
@@ -207,7 +212,9 @@ func (a *App) LoadTrack(trackID string) (*PlaybackState, error) {
 	a.mu.Lock()
 	a.pending = track
 	a.mu.Unlock()
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) LoadUploadedTune(label string, data []byte) (*PlaybackState, error) {
@@ -227,7 +234,9 @@ func (a *App) LoadUploadedTune(label string, data []byte) (*PlaybackState, error
 	}
 	a.pending = track
 	a.mu.Unlock()
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) PlayTrack(trackID string, subtune int, startAt float64) (*PlaybackState, error) {
@@ -241,12 +250,16 @@ func (a *App) PlayTrack(trackID string, subtune int, startAt float64) (*Playback
 	}
 	log.Printf("rasterklang-desktop: play track id=%s title=%q file=%s", track.ID, track.Title, track.File)
 	if err := a.engine.PlayTrack(track, path, subtune, startAt); err != nil {
-		return a.playbackState(false), err
+		state := a.playbackState(false)
+		a.updateMediaControlPlaybackState(state)
+		return state, err
 	}
 	a.mu.Lock()
 	a.pending = track
 	a.mu.Unlock()
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) PlayUploadedTune(subtune int, startAt float64) (*PlaybackState, error) {
@@ -257,24 +270,34 @@ func (a *App) PlayUploadedTune(subtune int, startAt float64) (*PlaybackState, er
 		return nil, fmt.Errorf("kein Upload geladen")
 	}
 	if err := a.engine.PlayTune(upload.Track, upload.Tune, upload.Track.File, subtune, startAt); err != nil {
-		return a.playbackState(false), err
+		state := a.playbackState(false)
+		a.updateMediaControlPlaybackState(state)
+		return state, err
 	}
 	a.mu.Lock()
 	a.pending = upload.Track
 	a.mu.Unlock()
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) TogglePause() (*PlaybackState, error) {
 	if !a.engine.TogglePlay() {
-		return a.playbackState(false), fmt.Errorf("kein Track geladen")
+		state := a.playbackState(false)
+		a.updateMediaControlPlaybackState(state)
+		return state, fmt.Errorf("kein Track geladen")
 	}
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) Stop() (*PlaybackState, error) {
 	a.engine.Stop()
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) Seek(seconds float64) (*PlaybackState, error) {
@@ -305,7 +328,9 @@ func (a *App) Seek(seconds float64) (*PlaybackState, error) {
 	if wasPaused {
 		a.engine.TogglePlay()
 	}
-	return a.playbackState(true), nil
+	state := a.playbackState(true)
+	a.updateMediaControlPlaybackState(state)
+	return state, nil
 }
 
 func (a *App) SetVolume(volume float64) (*PlaybackState, error) {
