@@ -83,7 +83,7 @@ Linux needs the Wails/WebKitGTK development packages for your distribution.
 On Debian/Ubuntu:
 
 ```sh
-sudo apt-get install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev libasound2-dev
+sudo apt-get install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev
 ```
 
 macOS needs the Xcode command line tools:

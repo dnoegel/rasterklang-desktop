@@ -294,7 +294,13 @@ function detectLicenseText(content) {
   if (text.includes("apache license") && text.includes("version 2.0")) return "Apache-2.0";
   if (text.includes("mit license") || text.includes("permission is hereby granted, free of charge")) return "MIT";
   if (text.includes("mozilla public license") && text.includes("version 2.0")) return "MPL-2.0";
-  if (text.includes("isc license")) return "ISC";
+  if (
+    text.includes("isc license") ||
+    (text.includes("permission to use, copy, modify, and/or distribute this software") &&
+      text.includes("with or without fee is hereby granted"))
+  ) {
+    return "ISC";
+  }
   if (text.includes("creative commons attribution 4.0")) return "CC-BY-4.0";
   if (text.includes("zero-clause bsd") || text.includes("0bsd")) return "0BSD";
   if (text.includes("sqlite is public domain") || text.includes("public domain by the authors")) return "Public-Domain";

@@ -36,6 +36,10 @@ PLIST_VERSION := $(patsubst v%,%,$(VERSION))
 LDFLAGS := -s -w -X main.version=$(BUILD_VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)
 RUN_ENV :=
 
+ifeq ($(UNAME_S),Linux)
+WAILS_TAGS := $(WAILS_TAGS),webkit2_41
+endif
+
 ifeq ($(UNAME_S),Darwin)
 WAILS_CGO_CFLAGS := -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
 WAILS_CGO_LDFLAGS := -framework UniformTypeIdentifiers -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
@@ -228,4 +232,4 @@ tidy:
 	go mod tidy
 
 deps-debian:
-	sudo apt-get install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev libasound2-dev
+	sudo apt-get install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev

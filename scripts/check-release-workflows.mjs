@@ -21,6 +21,7 @@ assertIncludes(makefile, "Makefile", [
   "WEBPLAYER_ARTIFACT_SHA256",
   "MACOSX_DEPLOYMENT_TARGET",
   "CGO_CFLAGS",
+  "webkit2_41",
   "check-webplayer-lock-release.mjs",
   "webplayer-lock-preflight",
   "checksum",
@@ -37,7 +38,7 @@ assertIncludes(ci, ".github/workflows/ci.yml", [
   "go-version-file: go.mod",
   "make check",
 ]);
-assert.match(ci, /libwebkit2gtk-4\.0-dev/, "CI should install Linux WebKitGTK dependencies");
+assert.match(ci, /libwebkit2gtk-4\.1-dev/, "CI should install Linux WebKitGTK dependencies");
 
 const release = readRequired(".github/workflows/release.yml");
 assertIncludes(release, ".github/workflows/release.yml", [
@@ -66,6 +67,7 @@ assertIncludes(release, ".github/workflows/release.yml", [
   "softprops/action-gh-release@v2",
 ]);
 assert.match(release, /sha(256sum|sum -a 256)/, "release workflow should verify checksums");
+assert.match(release, /libwebkit2gtk-4\.1-dev/, "release workflow should install Linux WebKitGTK dependencies");
 for (const forbidden of [
   "tags:",
   "v*",

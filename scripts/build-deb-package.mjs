@@ -59,7 +59,7 @@ writeFileSync(
     `Version: ${version}`,
     `Architecture: ${arch}`,
     "Maintainer: Rasterklang Maintainers <noreply@rasterklang.de>",
-    "Depends: libgtk-3-0, libwebkit2gtk-4.0-37, libasound2",
+    "Depends: libgtk-3-0, libwebkit2gtk-4.1-0, libasound2",
     "Section: sound",
     "Priority: optional",
     "Homepage: https://github.com/dnoegel/rasterklang-desktop",

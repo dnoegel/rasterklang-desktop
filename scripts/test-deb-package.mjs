@@ -85,7 +85,7 @@ try {
   assert.match(control, /^Package: rasterklang-desktop$/m);
   assert.match(control, /^Version: 0\.1\.0$/m);
   assert.match(control, /^Architecture: amd64$/m);
-  assert.match(control, /^Depends: libgtk-3-0, libwebkit2gtk-4\.0-37, libasound2$/m);
+  assert.match(control, /^Depends: libgtk-3-0, libwebkit2gtk-4\.1-0, libasound2$/m);
   assert.match(control, /^Description: Native Rasterklang SID desktop player$/m);
 
   for (const expectedPath of [
