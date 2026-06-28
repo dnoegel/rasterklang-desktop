@@ -36,6 +36,8 @@ assertIncludes(ci, ".github/workflows/ci.yml", [
   "actions/checkout@v4",
   "actions/setup-go@v5",
   "go-version-file: go.mod",
+  "rasterklang-webplayer",
+  "WEBPLAYER_DIR",
   "make check",
 ]);
 assert.match(ci, /libwebkit2gtk-4\.1-dev/, "CI should install Linux WebKitGTK dependencies");
